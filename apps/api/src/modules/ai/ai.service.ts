@@ -27,16 +27,11 @@ export class AiService {
     private readonly config: ConfigService,
     @Inject(DATABASE_TOKEN) private readonly db: Database,
   ) {
-    const providerName = config.get<string>('AI_PROVIDER', 'openai');
-    const apiKey = config.get<string>('OPENAI_API_KEY');
+    const groqKey = config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
+    const apiKey = groqKey || openAiKey;
     this.isConfigured = !!apiKey;
-
-    if (providerName === 'openai') {
-      this.provider = new OpenAiProvider(config);
-    } else {
-      // Default fallback
-      this.provider = new OpenAiProvider(config);
-    }
+    this.provider = new OpenAiProvider(config);
   }
 
   private async buildProblemContext(problemId: string): Promise<ProblemContext> {
@@ -91,8 +86,8 @@ export class AiService {
       .insert(aiAnalyses)
       .values({
         problemId,
-        provider: this.config.get<string>('AI_PROVIDER', 'openai'),
-        model: this.config.get<string>('OPENAI_MODEL', 'gpt-4o'),
+        provider: this.config.get<string>('AI_PROVIDER') || (process.env.GROQ_API_KEY ? 'groq' : 'openai'),
+        model: this.config.get<string>('AI_MODEL') || this.config.get<string>('OPENAI_MODEL') || (process.env.GROQ_API_KEY ? 'llama-3.3-70b-versatile' : 'gpt-4o'),
         summary: result.summary,
         severityAssessment: result.severityAssessment,
         priorityRecommendation: result.priorityRecommendation,
