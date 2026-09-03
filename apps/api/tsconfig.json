@@ -18,8 +18,10 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "rootDir": "./src",
     "paths": {
-      "@civora/db": ["../../packages/db/src"]
+      "@civora/db": ["../../packages/db/dist"]
     }
-  }
+  },
+  "include": ["src/**/*"]
 }
