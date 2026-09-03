@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth.context';
+import { User, Shield, Zap, ArrowLeft } from 'lucide-react';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -62,30 +63,31 @@ function LoginForm() {
       {/* Logo */}
       <div className="text-center mb-6">
         <Link href="/" className="inline-flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center text-xl font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1C4830] to-[#2F6D49] flex items-center justify-center text-xl font-bold text-white shadow-sm">
             C
           </div>
-          <span className="text-2xl font-bold">
+          <span className="text-2xl font-extrabold text-[#14261C]">
             Civ<span className="gradient-text">ora</span>
           </span>
         </Link>
       </div>
 
       {/* Role Switcher Tabs */}
-      <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
+      <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-[#F0F5EE] border border-[#DCE6DA] mb-6 shadow-xs">
         <button
           type="button"
           onClick={() => {
             setActiveRole('citizen');
             setError('');
           }}
-          className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
             activeRole === 'citizen'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-[#1C4830] text-white shadow-xs'
+              : 'text-[#4E6B5A] hover:text-[#14261C]'
           }`}
         >
-          <span>👤</span> Citizen Sign In
+          <User className="w-4 h-4" />
+          Citizen Sign In
         </button>
 
         <button
@@ -94,47 +96,49 @@ function LoginForm() {
             setActiveRole('admin');
             setError('');
           }}
-          className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
             activeRole === 'admin'
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-[#1C4830] text-white shadow-xs'
+              : 'text-[#4E6B5A] hover:text-[#14261C]'
           }`}
         >
-          <span>🛡️</span> Admin Portal
+          <Shield className="w-4 h-4" />
+          Admin Console
         </button>
       </div>
 
       {/* Card */}
-      <div className="glass-card p-8">
+      <div className="glass-card p-8 bg-white border border-[#CADDC7] shadow-md">
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold text-white mb-1">
-            {activeRole === 'admin' ? 'Admin Command Center' : 'Citizen Portal'}
+          <h2 className="text-xl font-extrabold text-[#14261C] mb-1">
+            {activeRole === 'admin' ? 'Admin Command Center' : 'Citizen Portal Access'}
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[#5D7666]">
             {activeRole === 'admin'
-              ? 'Secure administrative sign-in for platform management'
-              : 'Sign in to report, track, and resolve community problems'}
+              ? 'Official administrative access for triage and publishing'
+              : 'Sign in to report, track, and monitor community problems'}
           </p>
         </div>
 
         {activeRole === 'admin' && (
-          <div className="mb-5 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between">
-            <div className="text-xs text-purple-300">
-              <span className="font-semibold">Demo Admin:</span> admin@civora.ai
+          <div className="mb-5 p-3.5 rounded-xl bg-[#EAF5EA] border border-[#CCE2CA] flex items-center justify-between">
+            <div className="text-xs text-[#1E5433]">
+              <span className="font-bold">Demo Admin:</span> admin@civora.ai
             </div>
             <button
               type="button"
               onClick={handleFillAdmin}
-              className="text-xs px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 font-medium transition-colors"
+              className="text-xs px-2.5 py-1 rounded-lg bg-white hover:bg-[#F2F8F1] text-[#1E5433] font-bold border border-[#CCE2CA] transition-colors shadow-xs inline-flex items-center gap-1"
             >
-              ⚡ Auto-Fill
+              <Zap className="w-3.5 h-3.5 text-[#1E5433]" />
+              Auto-Fill
             </button>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1.5">
+            <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-1.5">
               {activeRole === 'admin' ? 'Admin Email' : 'Email Address'}
             </label>
             <input
@@ -148,7 +152,7 @@ function LoginForm() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1.5">Password</label>
+            <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-1.5">Password</label>
             <input
               type="password"
               value={password}
@@ -160,7 +164,7 @@ function LoginForm() {
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+            <div className="p-3 rounded-xl bg-[#FDEEEE] border border-[#F8B4B4] text-[#B92E2E] text-xs font-semibold">
               {error}
             </div>
           )}
@@ -168,11 +172,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full justify-center py-3 text-sm font-semibold rounded-xl text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-              activeRole === 'admin'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/20'
-                : 'btn-primary'
-            }`}
+            className="w-full justify-center py-3 text-xs font-bold rounded-xl text-white transition-all btn-primary shadow-xs"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -183,26 +183,27 @@ function LoginForm() {
                 Authenticating...
               </span>
             ) : activeRole === 'admin' ? (
-              '🛡️ Sign In to Admin Center'
+              'Sign In to Admin Center'
             ) : (
-              '👤 Sign In as Citizen'
+              'Sign In as Citizen'
             )}
           </button>
         </form>
 
         {activeRole === 'citizen' && (
-          <div className="mt-6 text-center text-xs text-gray-500">
+          <div className="mt-6 text-center text-xs text-[#5D7666]">
             Don't have a citizen account?{' '}
-            <Link href="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
-              Create one here
+            <Link href="/register" className="text-[#1E5433] hover:underline font-bold transition-colors">
+              Create account here
             </Link>
           </div>
         )}
       </div>
 
       <div className="mt-6 text-center">
-        <Link href="/" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-          ← Back to Homepage
+        <Link href="/" className="text-xs font-bold text-[#557161] hover:text-[#14261C] transition-colors inline-flex items-center gap-1">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Return to Civora Home
         </Link>
       </div>
     </div>
@@ -211,12 +212,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#080d14] flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background */}
+    <div className="min-h-screen bg-[#F8FAF8] flex items-center justify-center px-4 py-12 relative overflow-hidden">
       <div className="absolute inset-0 hero-gradient pointer-events-none" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none" />
-
-      <Suspense fallback={<div className="text-gray-400 text-sm">Loading sign in...</div>}>
+      <Suspense fallback={<div className="text-[#597262] text-sm">Loading sign in...</div>}>
         <LoginForm />
       </Suspense>
     </div>

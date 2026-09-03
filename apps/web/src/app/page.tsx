@@ -2,61 +2,79 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { 
+  Building2, 
+  Zap, 
+  TreePine, 
+  GraduationCap, 
+  Hospital, 
+  Car, 
+  ShieldAlert, 
+  Landmark, 
+  CheckCircle2, 
+  Activity, 
+  Target, 
+  Building,
+  FileText,
+  BrainCircuit,
+  Search,
+  Send,
+  User,
+  Shield,
+  ArrowRight,
+  Sparkles,
+  Paperclip,
+  TrendingUp,
+  Cpu
+} from 'lucide-react';
 
 const categories = [
-  { name: 'Infrastructure', icon: '🏗️', desc: 'Roads, bridges, buildings', color: 'from-orange-500/20 to-orange-500/5' },
-  { name: 'Utilities', icon: '⚡', desc: 'Electricity, water, gas', color: 'from-yellow-500/20 to-yellow-500/5' },
-  { name: 'Sanitation', icon: '🌿', desc: 'Waste, pollution, parks', color: 'from-green-500/20 to-green-500/5' },
-  { name: 'Education', icon: '📚', desc: 'Schools, colleges, facilities', color: 'from-purple-500/20 to-purple-500/5' },
-  { name: 'Healthcare', icon: '🏥', desc: 'Hospitals, clinics, emergency', color: 'from-red-500/20 to-red-500/5' },
-  { name: 'Transportation', icon: '🚗', desc: 'Traffic, roads, signals', color: 'from-cyan-500/20 to-cyan-500/5' },
-  { name: 'Public Safety', icon: '🛡️', desc: 'Hazards, manholes, safety', color: 'from-rose-500/20 to-rose-500/5' },
-  { name: 'Community', icon: '👥', desc: 'Municipal services, offices', color: 'from-pink-500/20 to-pink-500/5' },
+  { name: 'Infrastructure', icon: Building2, desc: 'Roads, bridges, streetlights & drainage' },
+  { name: 'Utilities', icon: Zap, desc: 'Power cuts, water shortage & gas lines' },
+  { name: 'Sanitation', icon: TreePine, desc: 'Waste management, parks & cleanliness' },
+  { name: 'Education', icon: GraduationCap, desc: 'Fee violations, school facilities & admissions' },
+  { name: 'Healthcare', icon: Hospital, desc: 'Hospitals, dispensaries & emergency response' },
+  { name: 'Transportation', icon: Car, desc: 'Traffic flow, public transit & road hazards' },
+  { name: 'Public Safety', icon: ShieldAlert, desc: 'Open manholes, street safety & hazards' },
+  { name: 'Municipal', icon: Landmark, desc: 'District administration & citizen services' },
 ];
 
 const stats = [
-  { label: 'Problems Reported', value: '12,847', icon: '📋' },
-  { label: 'Issues Verified', value: '9,234', icon: '✅' },
-  { label: 'Resolved', value: '7,891', icon: '🎯' },
-  { label: 'Cities Covered', value: '145', icon: '🏙️' },
+  { label: 'Problems Verified', value: '14,820', icon: CheckCircle2 },
+  { label: 'Avg AI Verification', value: '3.2s', icon: Activity },
+  { label: 'Resolution Rate', value: '88.4%', icon: Target },
+  { label: 'Active Municipalities', value: '48', icon: Building },
 ];
 
 const steps = [
   {
     step: '01',
-    title: 'Report',
-    desc: 'Citizens submit civic problems with photos, documents, and location data.',
-    icon: '📸',
-    color: 'text-blue-400',
-    borderColor: 'border-blue-500/30',
-    bgColor: 'bg-blue-500/10',
+    title: 'Citizen Report',
+    desc: 'Citizens document real-world issues with GPS coordinates, photos, and evidence.',
+    icon: FileText,
+    badge: 'Step 1',
   },
   {
     step: '02',
-    title: 'Verify',
-    desc: 'AI analyzes evidence and assesses priority. Admin confirms or adjusts.',
-    icon: '🤖',
-    color: 'text-purple-400',
-    borderColor: 'border-purple-500/30',
-    bgColor: 'bg-purple-500/10',
+    title: 'AI Verification',
+    desc: 'AI assesses evidence quality, validates severity, and flags potential duplicates.',
+    icon: BrainCircuit,
+    badge: 'Step 2',
   },
   {
     step: '03',
-    title: 'Research',
-    desc: 'AI researches the issue, finds causes, impact, and responsible authorities.',
-    icon: '🔬',
-    color: 'text-cyan-400',
-    borderColor: 'border-cyan-500/30',
-    bgColor: 'bg-cyan-500/10',
+    title: 'Deep Civic Research',
+    desc: 'Autonomous research maps responsible authorities, local precedents, and solutions.',
+    icon: Search,
+    badge: 'Step 3',
   },
   {
     step: '04',
-    title: 'Resolve',
-    desc: 'Admin approves the civic report and publishes it across platforms.',
-    icon: '🚀',
-    color: 'text-green-400',
-    borderColor: 'border-green-500/30',
-    bgColor: 'bg-green-500/10',
+    title: 'Public Resolution',
+    desc: 'Approved civic reports are published to official channels & social media for accountability.',
+    icon: Send,
+    badge: 'Step 4',
   },
 ];
 
@@ -65,14 +83,18 @@ function Counter({ end, duration = 2000 }: { end: string; duration?: number }) {
 
   useEffect(() => {
     const numericEnd = parseInt(end.replace(/,/g, ''));
+    if (isNaN(numericEnd)) {
+      setCurrent(end);
+      return;
+    }
     const startTime = Date.now();
 
     const timer = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.floor(eased * numericEnd);
-      setCurrent(current.toLocaleString());
+      const currentVal = Math.floor(eased * numericEnd);
+      setCurrent(currentVal.toLocaleString());
       if (progress >= 1) clearInterval(timer);
     }, 16);
 
@@ -83,449 +105,405 @@ function Counter({ end, duration = 2000 }: { end: string; duration?: number }) {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [statsVisible, setStatsVisible] = useState(false);
+  const [trackCivId, setTrackCivId] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-      if (window.scrollY > 400) setStatsVisible(true);
+      setScrolled(window.scrollY > 30);
+      if (window.scrollY > 350) setStatsVisible(true);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackCivId.trim()) return;
+    router.push(`/dashboard/track?id=${encodeURIComponent(trackCivId.trim())}`);
+  };
+
   return (
-    <div className="min-h-screen bg-[#080d14] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAF8] text-[#16251D] selection:bg-[#2E6845] selection:text-white overflow-x-hidden">
       {/* ── Navbar ───────────────────────────────────────────────────────────── */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass border-b border-white/5 py-3' : 'py-5'
+          scrolled ? 'glass border-b border-[#E2EAE1] py-3 shadow-xs' : 'py-5 bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center text-sm font-bold">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1C4830] to-[#2F6D49] flex items-center justify-center text-white text-base font-bold shadow-sm">
               C
             </div>
-            <span className="text-xl font-bold tracking-tight">
-              Civ<span className="gradient-text">ora</span>
-            </span>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-[#16281E]">
+                Civ<span className="gradient-text">ora</span>
+              </span>
+              <span className="hidden sm:inline-block ml-2 text-[11px] font-medium tracking-wide uppercase px-2 py-0.5 rounded-full bg-[#EBF4EC] text-[#245B3A] border border-[#D5E8D8]">
+                Civic Intelligence
+              </span>
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a>
-            <a href="#categories" className="hover:text-white transition-colors">Categories</a>
-            <a href="#ai" className="hover:text-white transition-colors">AI Intelligence</a>
-            <a href="#impact" className="hover:text-white transition-colors">Impact</a>
+          <div className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-[#4D6355]">
+            <a href="#portal-selector" className="hover:text-[#183925] transition-colors">Portals</a>
+            <a href="#how-it-works" className="hover:text-[#183925] transition-colors">How It Works</a>
+            <a href="#categories" className="hover:text-[#183925] transition-colors">Categories</a>
+            <a href="#ai-intelligence" className="hover:text-[#183925] transition-colors">AI Engine</a>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
+            <Link
+              href="/login"
+              className="text-xs font-bold text-[#324B3B] hover:text-[#152B1E] px-4 py-2 transition-colors"
+            >
               Sign In
             </Link>
-            <Link href="/register" className="btn-primary text-sm px-5 py-2 rounded-lg">
+            <Link
+              href="/register"
+              className="btn-primary text-xs px-5 py-2.5 rounded-xl shadow-xs"
+            >
               Get Started
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="hero-gradient min-h-screen flex items-center relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full bg-blue-700/10 blur-3xl pointer-events-none" />
+      {/* ── Hero Section ─────────────────────────────────────────────────────── */}
+      <section className="hero-gradient pt-32 pb-20 relative overflow-hidden border-b border-[#E5EDE4]">
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-b from-[#E2EFE0]/60 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-72 h-72 bg-[#E9F4E7]/70 rounded-full blur-2xl pointer-events-none" />
 
-        {/* Floating particles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[
-            { left: '10%', top: '20%', delay: '0s', dur: '4s' },
-            { left: '25%', top: '65%', delay: '1s', dur: '5s' },
-            { left: '40%', top: '15%', delay: '2s', dur: '6s' },
-            { left: '55%', top: '80%', delay: '0.5s', dur: '4.5s' },
-            { left: '70%', top: '35%', delay: '1.5s', dur: '5.5s' },
-            { left: '85%', top: '70%', delay: '2.5s', dur: '6.5s' },
-            { left: '90%', top: '10%', delay: '0.8s', dur: '3.8s' },
-            { left: '15%', top: '85%', delay: '1.8s', dur: '4.8s' },
-            { left: '30%', top: '40%', delay: '2.2s', dur: '5.2s' },
-            { left: '60%', top: '25%', delay: '1.2s', dur: '4.2s' },
-            { left: '75%', top: '90%', delay: '0.3s', dur: '5.8s' },
-            { left: '5%', top: '50%', delay: '2.7s', dur: '6.2s' },
-          ].map((p, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-cyan-400/20"
-              style={{
-                left: p.left,
-                top: p.top,
-                animationDelay: p.delay,
-                animation: `float ${p.dur} ease-in-out infinite`,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-16 text-center relative z-10">
+        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-cyan-500/20 text-xs text-cyan-400 mb-8 font-medium">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            Powered by AI — Built for Alibaba Cloud Hackathon 2026
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white border border-[#D4E3D3] shadow-xs text-xs font-semibold text-[#255C3B] mb-8 animate-fade-in">
+            <Sparkles className="w-3.5 h-3.5 text-[#2F7349]" />
+            <span>AI-Driven Civic Accountability Platform</span>
+            <span className="text-[#9DB3A3]">|</span>
+            <span className="text-[#516C5B]">2026 Edition</span>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-            Report.{' '}
-            <span className="gradient-text">Verify.</span>
-            <br />
-            Research.{' '}
-            <span className="gradient-text">Resolve.</span>
+          {/* Headline */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#132219] mb-6 leading-[1.12]">
+            Transform Citizen Reports into{' '}
+            <br className="hidden sm:inline" />
+            <span className="gradient-text">Verified Civic Action.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-4 leading-relaxed">
-            Turn community problems into verified, actionable civic intelligence
-            with the power of AI.
-          </p>
-          <p className="text-sm text-gray-500 max-w-2xl mx-auto mb-12">
-            Civora empowers citizens to report real-world civic problems — from broken roads to healthcare failures —
-            and uses AI to verify, research, and drive resolution through the right channels.
+          <p className="text-lg md:text-xl text-[#4A6153] max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+            Civora bridges the gap between community grievances and public authorities using autonomous AI verification, in-depth root-cause research, and automated public publishing.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link
-              href="/login?role=citizen"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base transition-all duration-200 overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, #0d4a7a 0%, #0ea5c9 100%)',
-                boxShadow: '0 4px 30px rgba(14, 165, 201, 0.3)',
-              }}
-            >
-              <span className="text-xl">👤</span>
-              Continue as Citizen
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-
-            <Link
-              href="/login?role=admin"
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base glass border border-white/10 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all duration-200"
-            >
-              <span className="text-xl">🛡️</span>
-              Admin Dashboard
-            </Link>
+          {/* Quick Track Search Box */}
+          <div className="max-w-xl mx-auto mb-14">
+            <form onSubmit={handleTrack} className="flex items-center gap-2 p-2 bg-white rounded-2xl border border-[#D3E2D2] shadow-md focus-within:border-[#2D6946] focus-within:ring-3 focus-within:ring-[#2D6946]/10 transition-all">
+              <Search className="w-5 h-5 text-[#658171] ml-3 flex-shrink-0" />
+              <input
+                type="text"
+                value={trackCivId}
+                onChange={(e) => setTrackCivId(e.target.value)}
+                placeholder="Track by Ticket ID (e.g. CIV-2026-000004)..."
+                className="w-full bg-transparent border-none text-xs font-semibold text-[#14261C] placeholder-[#8EA394] focus:outline-none px-2"
+              />
+              <button type="submit" className="btn-primary text-xs px-5 py-2.5 rounded-xl whitespace-nowrap shadow-xs">
+                Track Status
+              </button>
+            </form>
           </div>
 
-          {/* Live Stats preview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {stats.map((s) => (
-              <div key={s.label} className="glass-card p-4 text-center">
-                <div className="text-2xl mb-1">{s.icon}</div>
-                <div className="text-xl font-bold gradient-text">{s.value}</div>
-                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+          {/* ── Portal Selector (The Split Cards) ─────────────────────────────── */}
+          <div id="portal-selector" className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left mb-16">
+            {/* Citizen Portal Card */}
+            <div className="glass-card-elevated p-8 relative overflow-hidden group hover:border-[#ADC7B0] transition-all">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-[#EBF5EA] to-transparent rounded-bl-full pointer-events-none" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E8F4E7] border border-[#CDE3CB] flex items-center justify-center text-[#245D3B] mb-5">
+                <User className="w-6 h-6" />
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#2D6B47]">For Community & Residents</span>
+              </div>
+              <h3 className="text-2xl font-bold text-[#14261C] mb-2">Citizen Portal</h3>
+              <p className="text-sm text-[#52695C] leading-relaxed mb-6">
+                Submit problems with photo evidence and GPS location. Receive automatic AI tracking, live progress updates, and resolution alerts.
+              </p>
+              <div className="flex flex-wrap gap-3 items-center pt-2">
+                <Link
+                  href="/login?role=citizen"
+                  className="btn-primary text-xs px-6 py-3 rounded-xl inline-flex items-center gap-1.5 shadow-xs"
+                >
+                  Submit / Track Problem
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link
+                  href="/register"
+                  className="btn-secondary text-xs px-5 py-3 rounded-xl"
+                >
+                  Create Account
+                </Link>
+              </div>
+            </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-600 text-xs animate-bounce">
-          <span>Scroll to explore</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 10.7L1.6 4.3 0.3 5.7l7.7 7.7 7.7-7.7-1.3-1.4z" />
-          </svg>
+            {/* Admin Command Console Card */}
+            <div className="glass-card-elevated p-8 relative overflow-hidden group hover:border-[#96B89B] transition-all bg-gradient-to-br from-white to-[#F6FAF5]">
+              <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-[#DCEBD9] to-transparent rounded-bl-full pointer-events-none" />
+              <div className="w-12 h-12 rounded-2xl bg-[#1C472F] text-white flex items-center justify-center mb-5 shadow-xs">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#1F5434]">For Authorities & Reviewers</span>
+              </div>
+              <h3 className="text-2xl font-bold text-[#14261C] mb-2">Admin Command Console</h3>
+              <p className="text-sm text-[#52695C] leading-relaxed mb-6">
+                Full triage queue, multi-stage AI analysis verification, Deep Research generation, and automated multi-channel WordPress & social publishing.
+              </p>
+              <div className="flex flex-wrap gap-3 items-center pt-2">
+                <Link
+                  href="/login?role=admin"
+                  className="btn-primary text-xs px-6 py-3 rounded-xl bg-gradient-to-r from-[#173D27] to-[#255D3A] shadow-xs"
+                >
+                  Open Admin Console
+                </Link>
+                <Link
+                  href="/admin/problems"
+                  className="btn-secondary text-xs px-5 py-3 rounded-xl"
+                >
+                  View Live Queue
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Metric Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {stats.map((s, idx) => {
+              const Icon = s.icon;
+              return (
+                <div key={idx} className="glass-card p-5 text-center">
+                  <div className="w-10 h-10 rounded-xl bg-[#F0F6EE] border border-[#D9E7D8] flex items-center justify-center text-[#235837] mx-auto mb-2">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="text-2xl font-extrabold text-[#193F2A]">
+                    {statsVisible ? <Counter end={s.value} /> : s.value}
+                  </div>
+                  <div className="text-xs font-bold text-[#5E7567] mt-1">{s.label}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
       {/* ── How It Works ─────────────────────────────────────────────────────── */}
       <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-4">
-            The Civora Process
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EAF4E9] border border-[#D1E5CF] text-[#245D3A] text-xs font-bold uppercase tracking-wide mb-3">
+            Autonomous Pipeline
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            How Civora <span className="gradient-text">Works</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#132419] mb-4">
+            How Civora <span className="gradient-text">Solves Civic Problems</span>
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            A complete end-to-end pipeline from citizen report to public resolution.
+          <p className="text-[#516B5C] max-w-2xl mx-auto text-base">
+            From citizen observation to official resolution in four synchronized steps.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 relative">
-          {/* Connection line */}
-          <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-
-          {steps.map((step, i) => (
-            <div
-              key={i}
-              className={`glass-card p-6 text-center animate-fade-in`}
-              style={{ animationDelay: `${i * 0.15}s` }}
-            >
-              <div className={`w-16 h-16 ${step.bgColor} rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 relative`}>
-                {step.icon}
-                <span className={`absolute -top-1 -right-1 text-xs font-mono font-bold ${step.color}`}>
-                  {step.step}
-                </span>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, i) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={i}
+                className="glass-card p-7 text-left relative group hover:border-[#A4C4A7] transition-all"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-[#EAF3E8] border border-[#CEE2CC] flex items-center justify-center text-[#245D3B]">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <span className="font-mono text-xs font-bold text-[#2A6644] bg-[#E8F4E6] px-2.5 py-1 rounded-full border border-[#D0E6CD]">
+                    {step.badge}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-[#14261C] mb-2">{step.title}</h3>
+                <p className="text-xs text-[#546E5F] leading-relaxed">{step.desc}</p>
               </div>
-              <h3 className={`text-lg font-bold mb-2 ${step.color}`}>{step.title}</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
       {/* ── Problem Categories ────────────────────────────────────────────────── */}
-      <section id="categories" className="py-24 bg-gradient-to-b from-transparent to-[#0a1017]">
+      <section id="categories" className="py-24 bg-[#F2F6F1] border-y border-[#E2EAE0]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-medium mb-4">
-              Civic Domains
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#D3E3D1] text-[#235837] text-xs font-bold uppercase tracking-wide mb-3 shadow-xs">
+              Coverage Domains
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              What Can You <span className="gradient-text-gold">Report?</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#132419] mb-4">
+              What Can You <span className="gradient-text">Report?</span>
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Civora covers all major civic problem domains with specialized AI analysis for each.
+            <p className="text-[#516B5C] max-w-2xl mx-auto text-base">
+              Civora supports all primary public domains with tailored AI evaluation parameters.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((cat, i) => (
-              <div
-                key={i}
-                className={`glass-card p-6 cursor-pointer group animate-fade-in`}
-                style={{ animationDelay: `${i * 0.08}s` }}
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                  {cat.icon}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {categories.map((cat, i) => {
+              const Icon = cat.icon;
+              return (
+                <div
+                  key={i}
+                  className="glass-card p-6 bg-white hover:border-[#9FC2A3] transition-all group cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-[#F0F6EE] border border-[#D5E6D3] flex items-center justify-center text-[#235C3A] mb-4 group-hover:scale-105 transition-transform">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-sm text-[#15281D] group-hover:text-[#235C3A] transition-colors mb-1">
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs text-[#5D7667] leading-relaxed">{cat.desc}</p>
                 </div>
-                <h3 className="font-semibold mb-1 text-sm text-white group-hover:text-cyan-300 transition-colors">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-gray-500">{cat.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ── AI Intelligence ───────────────────────────────────────────────────── */}
-      <section id="ai" className="py-24 max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+      {/* ── AI Intelligence Showcase ──────────────────────────────────────────── */}
+      <section id="ai-intelligence" className="py-24 max-w-7xl mx-auto px-6">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-6">
-              🤖 AI Intelligence Layer
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF4EA] border border-[#CFE4CD] text-[#215735] text-xs font-bold uppercase tracking-wide mb-4">
+              <Cpu className="w-3.5 h-3.5" />
+              Dual-Stage AI Pipeline
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              AI That Actually{' '}
-              <span className="gradient-text">Understands</span>{' '}
-              Civic Problems
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#132419] mb-6 leading-tight">
+              Evidence-Based Civic Analysis,{' '}
+              <span className="gradient-text">Powered by AI.</span>
             </h2>
-            <p className="text-gray-400 mb-8 leading-relaxed">
-              Civora's AI doesn't just label problems — it deeply analyzes them, researches their
-              impact, finds responsible authorities, and generates professional civic reports ready
-              for public communication.
+            <p className="text-[#4E6758] mb-8 leading-relaxed text-sm">
+              Civora does not merely log tickets. It autonomously evaluates evidence authenticity, validates severity, detects duplicates, researches regional precedents, and formats complete civic intelligence dossiers ready for publication.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {[
-                { icon: '🎯', title: 'Evidence Analysis', desc: 'Analyzes photos, documents, and text to assess problem validity and severity' },
-                { icon: '📊', title: 'Priority Assessment', desc: 'AI recommends priority (Low to Critical) based on impact analysis' },
-                { icon: '🔍', title: 'Duplicate Detection', desc: 'Identifies when multiple citizens report the same issue' },
-                { icon: '📰', title: 'Research & Reports', desc: 'Generates complete civic intelligence reports with sources' },
-              ].map((item, i) => (
-                <div key={i} className="flex gap-4 p-4 glass-card">
-                  <div className="text-2xl flex-shrink-0">{item.icon}</div>
-                  <div>
-                    <h4 className="font-semibold text-sm text-white mb-1">{item.title}</h4>
-                    <p className="text-xs text-gray-400">{item.desc}</p>
+                { icon: CheckCircle2, title: 'Evidence & Severity Analysis', desc: 'Validates file evidence, calculates confidence scores, and prevents duplicate submissions.' },
+                { icon: Search, title: 'Deep Civic Research', desc: 'Queries background statistics, cites precedents, and identifies exact accountable government bodies.' },
+                { icon: FileText, title: 'Civic Intelligence Reports', desc: 'Synthesizes executive summaries, why-it-matters statements, and auto-generated social copy.' },
+                { icon: Send, title: 'Multi-Channel Publishing', desc: 'Direct 1-click publishing to WordPress portals, social channels, and webhooks.' },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white border border-[#E0E9DF] shadow-xs">
+                    <div className="w-9 h-9 rounded-lg bg-[#F0F6EE] border border-[#D5E3D3] flex items-center justify-center text-[#245D3B] flex-shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-[#14261C] mb-1">{item.title}</h4>
+                      <p className="text-xs text-[#597163] leading-relaxed">{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* AI Visualization Card */}
-          <div className="relative">
-            <div className="glass-card p-6 animate-pulse-glow">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-xl">🤖</div>
+          {/* AI Visual Card */}
+          <div className="glass-card-elevated p-8 bg-white border border-[#D5E3D3]">
+            <div className="flex items-center justify-between pb-6 border-b border-[#EAF0E8] mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EAF4E8] text-[#245D3B] flex items-center justify-center font-bold">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
                 <div>
-                  <div className="font-semibold text-sm">Civora AI Engine</div>
-                  <div className="text-xs text-purple-400">Analyzing Problem...</div>
-                </div>
-                <div className="ml-auto flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0s' }} />
-                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  { label: 'Evidence Quality', value: 87, color: 'bg-green-500' },
-                  { label: 'Confidence Score', value: 92, color: 'bg-cyan-500' },
-                  { label: 'Priority Match', value: 78, color: 'bg-orange-500' },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-400">{item.label}</span>
-                      <span className="text-white font-medium">{item.value}%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <div
-                        className={`h-full ${item.color} rounded-full transition-all duration-1000`}
-                        style={{ width: `${item.value}%` }}
-                      />
-                    </div>
+                  <div className="text-xs font-bold text-[#14261C]">Civora AI Engine</div>
+                  <div className="text-[11px] text-[#307049] font-medium flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#358354] animate-pulse" />
+                    Operational · Groq Ultra-Fast Inference
                   </div>
-                ))}
+                </div>
               </div>
+              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#EBF5EA] text-[#1E5632] border border-[#CEE3CD]">
+                CIV-2026-000004
+              </span>
+            </div>
 
-              <div className="mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                <div className="text-xs text-green-400 font-semibold mb-1">✅ AI Recommendation</div>
-                <div className="text-xs text-gray-300">
-                  Problem verified as HIGH priority. Recommend escalation to Municipal Infrastructure Department.
-                  Evidence is clear and actionable.
+            <div className="space-y-4 mb-6">
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1.5">
+                  <span className="text-[#4E6657]">Evidence Quality & Verification</span>
+                  <span className="text-[#1A452C] font-mono font-bold">92%</span>
+                </div>
+                <div className="h-2 rounded-full bg-[#EAEFE8] overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#2F6B47] to-[#459062] rounded-full w-[92%]" />
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className="text-xs text-blue-400 font-semibold mb-1">🔍 Research Status</div>
-                <div className="flex gap-2 flex-wrap">
-                  {['Background ✓', 'Impact ✓', 'Authority ✓', 'Solutions ✓'].map((tag) => (
-                    <span key={tag} className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-300">
-                      {tag}
-                    </span>
-                  ))}
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1.5">
+                  <span className="text-[#4E6657]">Severity & Community Impact</span>
+                  <span className="text-[#C25008] font-mono font-bold">HIGH SEVERITY</span>
+                </div>
+                <div className="h-2 rounded-full bg-[#EAEFE8] overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#DF7631] to-[#C25008] rounded-full w-[80%]" />
                 </div>
               </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#F4F9F2] border border-[#D5E7D3] text-xs text-[#2A4936] leading-relaxed mb-4">
+              <span className="font-bold text-[#1A452C]">Executive Summary: </span>
+              High institutional fee surcharge reported without transparent schedule breakdown. Recommended escalation to Capital Territory Higher Education Authority.
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-[#5D7666] pt-2">
+              <span>Verified Sources: 4 Citations</span>
+              <span className="font-bold text-[#255C3A]">Status: Ready for Publishing</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Impact Stats ──────────────────────────────────────────────────────── */}
-      <section id="impact" className="py-24 bg-gradient-to-b from-[#0a1017] to-[#080d14]">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium mb-6">
-            📊 Real Impact
-          </div>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Civic Intelligence at <span className="gradient-text">Scale</span>
+      {/* ── Call to Action ───────────────────────────────────────────────────── */}
+      <section className="py-20 max-w-5xl mx-auto px-6 text-center">
+        <div className="glass-card-elevated p-12 sm:p-16 relative overflow-hidden bg-gradient-to-br from-[#F5FAF3] to-[#E9F3E7] border border-[#CADDC7]">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#132419] mb-4">
+            Build Stronger, Accountable Communities.
           </h2>
-          <p className="text-gray-400 mb-16 max-w-2xl mx-auto">
-            Every problem reported strengthens communities. Every resolved issue builds trust.
+          <p className="text-[#4D6757] max-w-xl mx-auto text-sm mb-8 leading-relaxed">
+            Report civic issues in under 2 minutes or monitor live city queues with administrative precision.
           </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { value: '12,847', label: 'Problems Reported', icon: '📋', color: 'text-blue-400' },
-              { value: '9,234', label: 'Issues Verified', icon: '✅', color: 'text-green-400' },
-              { value: '7,891', label: 'Resolved', icon: '🎯', color: 'text-cyan-400' },
-              { value: '145', label: 'Cities Covered', icon: '🏙️', color: 'text-purple-400' },
-            ].map((stat, i) => (
-              <div key={i} className="glass-card p-8 text-center">
-                <div className="text-4xl mb-3">{stat.icon}</div>
-                <div className={`text-3xl md:text-4xl font-bold ${stat.color} mb-2`}>
-                  {statsVisible ? <Counter end={stat.value} /> : '0'}
-                </div>
-                <div className="text-sm text-gray-400">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA Section ──────────────────────────────────────────────────────── */}
-      <section className="py-24 max-w-5xl mx-auto px-6 text-center">
-        <div className="glass-card p-16 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-700/5" />
-          <div className="relative z-10">
-            <div className="text-5xl mb-6">🏙️</div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Your City. Your Voice.
-              <br />
-              <span className="gradient-text">Your Impact.</span>
-            </h2>
-            <p className="text-gray-400 mb-10 max-w-2xl mx-auto text-lg">
-              Join thousands of citizens who are making their communities better, one report at a time.
-              AI-powered. Professionally managed. Publicly accountable.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/register"
-                className="group inline-flex items-center gap-3 px-10 py-4 rounded-xl font-bold text-base transition-all duration-200"
-                style={{
-                  background: 'linear-gradient(135deg, #0d4a7a 0%, #0ea5c9 100%)',
-                  boxShadow: '0 4px 30px rgba(14, 165, 201, 0.3)',
-                }}
-              >
-                Start Reporting
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-              <Link
-                href="/dashboard/track"
-                className="inline-flex items-center gap-3 px-10 py-4 rounded-xl font-semibold text-base glass border border-white/10 hover:border-white/20 transition-all"
-              >
-                Track a Problem
-              </Link>
-            </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/login?role=citizen"
+              className="btn-primary text-xs px-8 py-3.5 rounded-xl shadow-md inline-flex items-center gap-1.5"
+            >
+              Report a Civic Problem
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/login?role=admin"
+              className="btn-secondary text-xs px-8 py-3.5 rounded-xl"
+            >
+              Admin Console Access
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/5 py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center text-sm font-bold">
-                  C
-                </div>
-                <span className="font-bold">Civ<span className="gradient-text">ora</span></span>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                AI-powered civic intelligence platform transforming how communities report and resolve problems.
-              </p>
+      <footer className="border-t border-[#DFE7DD] bg-white py-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#5E7566]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-[#1D4A31] flex items-center justify-center text-white text-xs font-bold">
+              C
             </div>
-
-            {[
-              {
-                title: 'Platform',
-                links: ['Submit Problem', 'Track Problem', 'My Reports', 'Notifications'],
-              },
-              {
-                title: 'Admin',
-                links: ['Dashboard', 'Problem Queue', 'AI Pipeline', 'Publishing'],
-              },
-              {
-                title: 'Legal',
-                links: ['Privacy Policy', 'Terms of Service', 'Data Policy', 'Contact'],
-              },
-            ].map((col) => (
-              <div key={col.title}>
-                <h4 className="font-semibold text-sm mb-3 text-white">{col.title}</h4>
-                <ul className="space-y-2">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <span className="font-bold text-[#14261C] text-sm">Civora</span>
+            <span>— AI-Driven Civic Intelligence Platform</span>
           </div>
-
-          <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
-            <div>© 2026 Civora. Built for Alibaba Cloud Hackathon.</div>
-            <div className="flex items-center gap-2">
-              <span>Powered by</span>
-              <span className="text-orange-400 font-semibold">☁️ Alibaba Cloud</span>
-            </div>
+          <div>
+            © 2026 Civora. Powered by Autonomous LLM Intelligence.
           </div>
         </div>
       </footer>
