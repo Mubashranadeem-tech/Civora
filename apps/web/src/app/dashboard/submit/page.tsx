@@ -4,14 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
-const STEPS = ['Category', 'Problem Type', 'Description', 'Evidence', 'Location', 'Priority', 'Review'];
-
-const PRIORITIES = [
-  { value: 'low', label: 'Low', icon: '🟢', desc: 'Minor inconvenience, non-urgent' },
-  { value: 'medium', label: 'Medium', icon: '🟡', desc: 'Moderate impact, needs attention' },
-  { value: 'high', label: 'High', icon: '🟠', desc: 'Significant problem affecting many' },
-  { value: 'critical', label: 'Critical', icon: '🔴', desc: 'Urgent danger or major impact' },
-];
+const STEPS = ['Category', 'Problem Type', 'Description', 'Evidence', 'Location & ID', 'Review'];
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
@@ -182,7 +175,6 @@ export default function SubmitProblemPage() {
     () => form.title.trim().length >= 5,
     () => true, // evidence is optional
     () => form.city.trim().length >= 2,
-    () => !!form.userPriority,
     () => true, // review step
   ][step]?.();
 
@@ -421,35 +413,8 @@ export default function SubmitProblemPage() {
           </div>
         )}
 
-        {/* Step 5: Priority */}
+        {/* Step 5: Review */}
         {step === 5 && (
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-2">Set Priority</h2>
-            <p className="text-sm text-gray-400 mb-4">
-              How urgent is this problem? Admin/AI may adjust the final priority.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {PRIORITIES.map((p) => (
-                <button
-                  key={p.value}
-                  onClick={() => setForm({ ...form, userPriority: p.value })}
-                  className={`p-4 rounded-xl text-left transition-all border ${
-                    form.userPriority === p.value
-                      ? 'border-cyan-500/50 bg-cyan-500/10'
-                      : 'border-white/10 bg-white/3 hover:border-white/20'
-                  }`}
-                >
-                  <div className="text-2xl mb-2">{p.icon}</div>
-                  <div className="font-semibold text-sm text-white">{p.label}</div>
-                  <div className="text-xs text-gray-400 mt-1">{p.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 6: Review */}
-        {step === 6 && (
           <div>
             <h2 className="text-lg font-semibold text-white mb-4">Review Your Report</h2>
             <div className="space-y-3">
@@ -460,7 +425,7 @@ export default function SubmitProblemPage() {
                 { label: 'Description', value: form.description || '(No description)' },
                 { label: 'Location', value: `${form.city}${form.area ? ', ' + form.area : ''}${form.address ? ' (' + form.address + ')' : ''}` },
                 { label: 'Citizen CNIC', value: form.cnic || '(Not provided)' },
-                { label: 'Priority', value: form.userPriority.charAt(0).toUpperCase() + form.userPriority.slice(1) },
+                { label: 'Priority', value: '🤖 Auto-Assessed by AI & Admin Review' },
                 { label: 'Attachments', value: `${files.length} file(s)` },
               ].map((row) => (
                 <div key={row.label} className="flex gap-4 p-3 rounded-xl bg-white/3 border border-white/5">

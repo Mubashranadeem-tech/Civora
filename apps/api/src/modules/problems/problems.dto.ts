@@ -31,7 +31,8 @@ export class CreateProblemDto {
   description?: string;
 
   @IsEnum(['low', 'medium', 'high', 'critical'])
-  userPriority: 'low' | 'medium' | 'high' | 'critical';
+  @IsOptional()
+  userPriority?: 'low' | 'medium' | 'high' | 'critical' = 'medium';
 
   @IsString()
   @MinLength(2)
