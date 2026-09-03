@@ -71,7 +71,17 @@ export class PublishingService {
       throw new Error('No civic report found. Run AI research first.');
     }
 
-    const content = report.proposedPostContent || report.overview || 'Civic issue reported via Civora';
+const shortContent = report.proposedPostContent || report.overview || 'Civic issue reported via Civora';
+
+const hashtagLine = report.hashtags?.length ? '\n\n' + report.hashtags.map((h) => `#${h}`).join(' ') : '';
+
+const longContent = [
+  report.overview,
+  report.whyItMatters ? `Why It Matters\n${report.whyItMatters}` : null,
+  report.researchFindings ? `Research Findings\n${report.researchFindings}` : null,
+  report.recommendedAction ? `Recommended Action\n${report.recommendedAction}` : null,
+  report.responsibleAuthority ? `Responsible Authority\n${report.responsibleAuthority}` : null,
+].filter(Boolean).join('\n\n') + hashtagLine;
 
     // Create publishing job
     const [job] = await this.db
@@ -115,7 +125,8 @@ export class PublishingService {
       }
 
       try {
-        const result = await adapter.publish(content);
+          const platformContent = platform === 'wordpress' ? longContent : shortContent;
+          const result = await adapter.publish(platformContent);
 
         await this.db.insert(publishingResults).values({
           jobId: job.id,
