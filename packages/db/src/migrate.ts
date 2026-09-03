@@ -1,17 +1,24 @@
+import * as dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env from workspace root and local package
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
+
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
-import path from 'path';
 
 async function runMigrations() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error('DATABASE_URL is not defined');
+  const url = process.env.DATABASE_URL || 'postgresql://civora_user:civora_pass@localhost:5432/civora';
 
-  console.log('🔄 Running Civora database migrations...');
+  console.log('🔄 Running Civora database migrations on:', url.replace(/:[^:@]+@/, ':***@'));
   const client = postgres(url, { max: 1 });
   const db = drizzle(client);
 
-  await migrate(db, { migrationsFolder: path.join(__dirname, '../migrations') });
+  const migrationsFolder = path.join(__dirname, '../migrations');
+  await migrate(db, { migrationsFolder });
 
   console.log('✅ Migrations completed successfully!');
   await client.end();

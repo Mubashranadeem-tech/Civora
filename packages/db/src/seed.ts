@@ -1,3 +1,11 @@
+import * as dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env from workspace root and local package
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
+
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
@@ -156,8 +164,7 @@ const CATEGORIES_SEED = [
 ];
 
 async function seed() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error('DATABASE_URL is not defined');
+  const url = process.env.DATABASE_URL || 'postgresql://civora_user:civora_pass@localhost:5432/civora';
 
   const client = postgres(url, { max: 1 });
   const db = drizzle(client, { schema: { users, problemCategories, problemTypes } });
