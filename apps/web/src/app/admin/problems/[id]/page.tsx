@@ -3,6 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { 
+  FileText, 
+  BrainCircuit, 
+  Newspaper, 
+  Globe, 
+  History, 
+  MapPin, 
+  Paperclip, 
+  CheckCircle2, 
+  XCircle, 
+  Wrench, 
+  ExternalLink,
+  Edit3,
+  Save,
+  Check,
+  Search,
+  Cpu,
+  RefreshCw,
+  AlertCircle
+} from 'lucide-react';
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: 'Submitted',
@@ -19,36 +39,30 @@ const STATUS_LABELS: Record<string, string> = {
   more_info_needed: 'More Info Needed',
 };
 
-const PRIORITY_ICONS: Record<string, string> = {
-  critical: '🔴',
-  high: '🟠',
-  medium: '🟡',
-  low: '🟢',
-};
-
 type Tab = 'overview' | 'ai' | 'report' | 'publishing' | 'history';
 
-function TabButton({ label, active, onClick }: any) {
+function TabButton({ label, icon: Icon, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+      className={`px-4 py-2 text-xs font-bold rounded-xl transition-all inline-flex items-center gap-2 ${
         active
-          ? 'bg-white/10 text-white border border-white/15'
-          : 'text-gray-400 hover:text-white hover:bg-white/5'
+          ? 'bg-[#1C4830] text-white shadow-xs'
+          : 'bg-white text-[#4A6454] hover:text-[#15291E] hover:bg-[#F2F7F1] border border-[#DEE7DD]'
       }`}
     >
+      <Icon className="w-4 h-4" />
       {label}
     </button>
   );
 }
 
-function ActionButton({ label, onClick, loading, variant = 'primary', disabled = false }: any) {
+function ActionButton({ label, onClick, loading, variant = 'primary', disabled = false, icon: Icon }: any) {
   const classes = ({
     primary: 'btn-primary',
     secondary: 'btn-secondary',
     danger: 'btn-danger',
-    ai: 'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-purple-500/15 text-purple-300 border border-purple-500/25 hover:bg-purple-500/25 transition-all cursor-pointer disabled:opacity-40',
+    ai: 'inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-[#EBF5EA] text-[#1B5030] border border-[#CCE4CA] hover:bg-[#D8EBD6] transition-all cursor-pointer disabled:opacity-40 shadow-xs',
   } as Record<string, string>)[variant] || 'btn-primary';
 
   return (
@@ -63,9 +77,14 @@ function ActionButton({ label, onClick, loading, variant = 'primary', disabled =
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          Working...
+          Processing...
         </span>
-      ) : label}
+      ) : (
+        <span className="flex items-center gap-1.5">
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </span>
+      )}
     </button>
   );
 }
@@ -124,49 +143,49 @@ export default function AdminProblemDetailPage() {
       switch (action) {
         case 'ai-analyze':
           await api.analyzeWithAI(id);
-          setStatusMsg('✅ AI analysis completed successfully');
+          setStatusMsg('AI analysis completed successfully');
           break;
         case 'ai-research':
           await api.researchWithAI(id);
-          setStatusMsg('✅ AI research & civic report generated');
+          setStatusMsg('AI research & civic report generated');
           break;
         case 'verify':
           await api.reviewProblem(id, { action: 'verify', notes: reviewNotes });
-          setStatusMsg('✅ Problem verified');
+          setStatusMsg('Problem marked as verified');
           break;
         case 'reject':
           await api.reviewProblem(id, { action: 'reject', notes: reviewNotes });
-          setStatusMsg('❌ Problem rejected');
+          setStatusMsg('Problem rejected');
           break;
         case 'approve':
           await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
-          setStatusMsg('✅ Problem approved for publication');
+          setStatusMsg('Problem approved for publication');
           break;
         case 'under_verification':
           await api.updateProblemStatus(id, { status: 'under_verification', notes: reviewNotes });
-          setStatusMsg('🔍 Status updated to Under Verification');
+          setStatusMsg('Status updated to Under Verification');
           break;
         case 'in_progress':
           await api.updateProblemStatus(id, { status: 'in_progress', notes: reviewNotes });
-          setStatusMsg('🔧 Status updated to In Progress');
+          setStatusMsg('Status updated to In Progress');
           break;
         case 'resolved':
           await api.updateProblemStatus(id, { status: 'resolved', notes: reviewNotes });
-          setStatusMsg('🎉 Problem marked as Resolved');
+          setStatusMsg('Problem marked as Resolved');
           break;
         case 'publish':
           await api.publishProblem(id);
-          setStatusMsg('🌐 Published to configured platforms');
+          setStatusMsg('Published to configured platforms');
           break;
         case 'save-report':
           await api.updateCivicReport(id, reportEdits);
-          setStatusMsg('✅ Civic report saved');
+          setStatusMsg('Civic report saved');
           setEditingReport(false);
           break;
       }
       await fetch();
     } catch (err: any) {
-      setStatusMsg(`❌ Error: ${err.message}`);
+      setStatusMsg(`Error: ${err.message}`);
     } finally {
       setActionLoading(null);
     }
@@ -176,8 +195,8 @@ export default function AdminProblemDetailPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-10 h-10 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-3" />
-          <div className="text-sm text-gray-400">Loading problem...</div>
+          <div className="w-10 h-10 border-3 border-[#2A6544]/20 border-t-[#2A6544] rounded-full animate-spin mx-auto mb-3" />
+          <div className="text-xs font-medium text-[#577262]">Loading problem studio...</div>
         </div>
       </div>
     );
@@ -185,10 +204,10 @@ export default function AdminProblemDetailPage() {
 
   if (!problem) {
     return (
-      <div className="glass-card p-12 text-center">
-        <div className="text-4xl mb-4">❌</div>
-        <div className="text-white font-semibold mb-2">Problem Not Found</div>
-        <button onClick={() => router.push('/admin/problems')} className="btn-secondary mt-4">
+      <div className="glass-card p-12 text-center bg-white">
+        <AlertCircle className="w-10 h-10 text-[#C52222] mx-auto mb-2" />
+        <div className="text-[#14261C] font-bold text-lg mb-2">Problem Not Found</div>
+        <button onClick={() => router.push('/admin/problems')} className="btn-secondary mt-3 text-xs">
           ← Back to Queue
         </button>
       </div>
@@ -196,119 +215,121 @@ export default function AdminProblemDetailPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <button onClick={() => router.push('/admin/problems')} className="text-gray-500 hover:text-white transition-colors text-sm">
-              ← Queue
-            </button>
-            <div className="w-px h-4 bg-white/15" />
-            <span className="font-mono text-sm text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">
-              {problem.civId}
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/10 text-gray-300">
-              {STATUS_LABELS[problem.status] || problem.status}
-            </span>
-            <span className="text-sm">{PRIORITY_ICONS[problem.effectivePriority]}</span>
-          </div>
-          <h1 className="text-xl font-bold text-white">{problem.title}</h1>
-          <div className="text-sm text-gray-400 mt-1">
-            {problem.category?.name} › {problem.type?.name} · {problem.location?.city}
-            {problem.location?.area && `, ${problem.location.area}`}
-            · Submitted by {problem.submitter?.name}
+      <div className="glass-card p-6 bg-white border border-[#DCE5DA] shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <button
+                onClick={() => router.push('/admin/problems')}
+                className="text-xs font-bold text-[#4E6B5A] hover:text-[#163623] transition-colors"
+              >
+                ← Back to Queue
+              </button>
+              <span className="text-[#B9CBBF]">|</span>
+              <span className="font-mono text-xs font-bold text-[#1F5333] bg-[#EBF4E8] px-2.5 py-0.5 rounded-md border border-[#CCE2CA]">
+                {problem.civId}
+              </span>
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider bg-[#F2F7F1] text-[#294B37] border border-[#D7E4D5]">
+                {STATUS_LABELS[problem.status] || problem.status}
+              </span>
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#FFF1E6] text-[#A64708] border border-[#FCD7BE] uppercase tracking-wider">
+                {problem.effectivePriority} Priority
+              </span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-[#13251A] tracking-tight">{problem.title}</h1>
+            <div className="text-xs text-[#526B5C] mt-1 flex items-center gap-2 flex-wrap">
+              <span>{problem.category?.name} › {problem.type?.name}</span>
+              <span>·</span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-[#799584]" />
+                {problem.location?.city || 'Islamabad'}{problem.location?.area && `, ${problem.location.area}`}
+              </span>
+              <span>·</span>
+              <span>Submitted by <strong className="text-[#14261C]">{problem.submitter?.name || 'Citizen'}</strong></span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Status Message */}
       {statusMsg && (
-        <div className={`mb-4 p-3 rounded-xl text-sm border ${
-          statusMsg.startsWith('❌')
-            ? 'bg-red-500/10 border-red-500/20 text-red-300'
-            : 'bg-green-500/10 border-green-500/20 text-green-300'
-        }`}>
+        <div
+          className={`p-4 rounded-xl text-xs font-bold border flex items-center gap-2 ${
+            statusMsg.startsWith('Error')
+              ? 'bg-[#FDEEEE] border-[#F8B4B4] text-[#B92E2E]'
+              : 'bg-[#EBF5EA] border-[#CCE2CA] text-[#1E5633]'
+          }`}
+        >
+          <Check className="w-4 h-4" />
           {statusMsg}
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {(['overview', 'ai', 'report', 'publishing', 'history'] as Tab[]).map((t) => (
-          <TabButton
-            key={t}
-            label={{
-              overview: '📋 Overview',
-              ai: '🤖 AI Pipeline',
-              report: '📰 Civic Report',
-              publishing: '🌐 Publishing',
-              history: '📜 History',
-            }[t]}
-            active={tab === t}
-            onClick={() => setTab(t)}
-          />
-        ))}
+      {/* Navigation Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        <TabButton label="Overview" icon={FileText} active={tab === 'overview'} onClick={() => setTab('overview')} />
+        <TabButton label="AI Pipeline" icon={BrainCircuit} active={tab === 'ai'} onClick={() => setTab('ai')} />
+        <TabButton label="Civic Report" icon={Newspaper} active={tab === 'report'} onClick={() => setTab('report')} />
+        <TabButton label="Publishing" icon={Globe} active={tab === 'publishing'} onClick={() => setTab('publishing')} />
+        <TabButton label="Audit History" icon={History} active={tab === 'history'} onClick={() => setTab('history')} />
       </div>
 
-      {/* ── Overview Tab ──────────────────────────────────────────────────────── */}
+      {/* ── Tab 1: Overview ─────────────────────────────────────────────────── */}
       {tab === 'overview' && (
         <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {/* Problem Details */}
-            <div className="glass-card p-6">
-              <h3 className="font-semibold text-white mb-4">Problem Details</h3>
-              <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Category</div>
-                    <div className="text-white">{problem.category?.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Type</div>
-                    <div className="text-white">{problem.type?.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">User Priority</div>
-                    <div className="text-white">{problem.userPriority?.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Effective Priority</div>
-                    <div className="text-white">{problem.effectivePriority?.toUpperCase()}</div>
+          <div className="lg:col-span-2 space-y-6">
+            {/* Details */}
+            <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+              <h3 className="font-bold text-base text-[#14261C] mb-4 pb-2 border-b border-[#EAF0E8]">
+                Problem Report Metadata
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-4 text-xs mb-4">
+                <div className="p-3.5 rounded-xl bg-[#F6FAF5] border border-[#E2EBE1]">
+                  <div className="text-[11px] font-bold text-[#567261] uppercase tracking-wider mb-1">Category & Sub-Type</div>
+                  <div className="font-bold text-[#14261C]">{problem.category?.name} ({problem.type?.name})</div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-[#F6FAF5] border border-[#E2EBE1]">
+                  <div className="text-[11px] font-bold text-[#567261] uppercase tracking-wider mb-1">Assessed Priority</div>
+                  <div className="font-bold text-[#14261C] uppercase">
+                    {problem.effectivePriority} Priority
                   </div>
                 </div>
-                {problem.description && (
-                  <div>
-                    <div className="text-xs text-gray-500 mb-2">Description</div>
-                    <div className="text-gray-300 leading-relaxed bg-white/3 rounded-lg p-3 text-sm">
-                      {problem.description}
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {problem.description && (
+                <div>
+                  <div className="text-[11px] font-bold text-[#567261] uppercase tracking-wider mb-2">Citizen Description</div>
+                  <div className="text-[#2C4134] text-xs leading-relaxed bg-[#F8FAF7] border border-[#E2EBE1] rounded-xl p-4">
+                    {problem.description}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Location */}
             {problem.location && (
-              <div className="glass-card p-6">
-                <h3 className="font-semibold text-white mb-3">📍 Location</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-gray-500">City:</span> <span className="text-white ml-1">{problem.location.city}</span></div>
-                  {problem.location.area && <div><span className="text-gray-500">Area:</span> <span className="text-white ml-1">{problem.location.area}</span></div>}
-                  {problem.location.address && <div className="col-span-2"><span className="text-gray-500">Address:</span> <span className="text-white ml-1">{problem.location.address}</span></div>}
-                  {problem.location.latitude && (
-                    <div className="col-span-2 text-xs text-gray-500">
-                      GPS: {problem.location.latitude}, {problem.location.longitude}
-                    </div>
-                  )}
+              <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+                <h3 className="font-bold text-base text-[#14261C] mb-3 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-[#2E6A47]" />
+                  Location Coordinates
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div><span className="text-[#5A7464] font-medium">City:</span> <span className="font-bold text-[#14261C] ml-1">{problem.location.city}</span></div>
+                  {problem.location.area && <div><span className="text-[#5A7464] font-medium">Area:</span> <span className="font-bold text-[#14261C] ml-1">{problem.location.area}</span></div>}
+                  {problem.location.address && <div className="col-span-2"><span className="text-[#5A7464] font-medium">Address:</span> <span className="font-bold text-[#14261C] ml-1">{problem.location.address}</span></div>}
                 </div>
               </div>
             )}
 
             {/* Attachments */}
             {problem.attachments?.length > 0 && (
-              <div className="glass-card p-6">
-                <h3 className="font-semibold text-white mb-3">📎 Evidence ({problem.attachments.length} files)</h3>
+              <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+                <h3 className="font-bold text-base text-[#14261C] mb-3 flex items-center gap-1.5">
+                  <Paperclip className="w-4 h-4 text-[#2E6A47]" />
+                  Document & Photo Evidence ({problem.attachments.length})
+                </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {problem.attachments.map((att: any) => (
                     <a
@@ -316,23 +337,23 @@ export default function AdminProblemDetailPage() {
                       href={att.signedUrl || att.storageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group block rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all"
+                      className="group block rounded-xl overflow-hidden border border-[#D6E3D4] hover:border-[#2D6C48] transition-all bg-[#FAFDF9]"
                     >
                       {att.mimeType?.startsWith('image/') ? (
                         <img
                           src={att.signedUrl || att.storageUrl}
                           alt={att.originalName}
-                          className="w-full h-24 object-cover group-hover:opacity-90 transition-opacity"
+                          className="w-full h-24 object-cover group-hover:scale-105 transition-transform"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       ) : (
-                        <div className="w-full h-24 flex items-center justify-center bg-white/5 text-3xl">
-                          {att.mimeType?.includes('pdf') ? '📄' : '📁'}
+                        <div className="w-full h-24 flex items-center justify-center bg-[#F2F7F1] text-xs font-mono font-bold text-[#4E6857]">
+                          {att.mimeType?.split('/')[1]?.toUpperCase()}
                         </div>
                       )}
-                      <div className="p-2">
-                        <div className="text-xs text-gray-400 truncate">{att.originalName}</div>
-                        <div className="text-xs text-gray-600">{(att.fileSize / 1024).toFixed(1)} KB</div>
+                      <div className="p-2.5 bg-white border-t border-[#EAEFE8]">
+                        <div className="text-xs font-bold text-[#14261C] truncate">{att.originalName}</div>
+                        <div className="text-[11px] text-[#698575]">{(att.fileSize / 1024).toFixed(1)} KB</div>
                       </div>
                     </a>
                   ))}
@@ -341,89 +362,80 @@ export default function AdminProblemDetailPage() {
             )}
           </div>
 
-          {/* Action Panel */}
-          <div className="space-y-4">
-            <div className="glass-card p-5">
-              <h3 className="font-semibold text-white mb-4">Admin Actions</h3>
-
+          {/* Admin Sidebar Panel */}
+          <div className="space-y-6">
+            <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+              <h3 className="font-bold text-base text-[#14261C] mb-3">Triage & Actions</h3>
               <div className="space-y-2 mb-4">
-                <div className="text-xs text-gray-400 mb-2">Notes (optional)</div>
+                <div className="text-xs font-semibold text-[#577262]">Review Notes (optional)</div>
                 <textarea
                   value={reviewNotes}
                   onChange={(e) => setReviewNotes(e.target.value)}
                   className="input-civora text-xs resize-none"
                   rows={3}
-                  placeholder="Add notes for this action..."
+                  placeholder="Record administrative notes..."
                 />
               </div>
 
               <div className="space-y-2">
                 {problem.status === 'submitted' && (
-                  <ActionButton label="🔍 Start Verification" onClick={() => handleAction('under_verification')} loading={actionLoading === 'under_verification'} />
+                  <ActionButton label="Start Verification" icon={Search} onClick={() => handleAction('under_verification')} loading={actionLoading === 'under_verification'} />
                 )}
                 {['under_verification', 'more_info_needed'].includes(problem.status) && (
                   <>
-                    <ActionButton label="✅ Verify Problem" onClick={() => handleAction('verify')} loading={actionLoading === 'verify'} />
-                    <ActionButton label="❌ Reject Problem" onClick={() => handleAction('reject')} loading={actionLoading === 'reject'} variant="danger" />
+                    <ActionButton label="Mark Verified" icon={CheckCircle2} onClick={() => handleAction('verify')} loading={actionLoading === 'verify'} />
+                    <ActionButton label="Reject Issue" icon={XCircle} onClick={() => handleAction('reject')} loading={actionLoading === 'reject'} variant="danger" />
                   </>
                 )}
                 {['verified', 'awaiting_approval'].includes(problem.status) && (
-                  <ActionButton label="👍 Approve for Publishing" onClick={() => handleAction('approve')} loading={actionLoading === 'approve'} />
+                  <ActionButton label="Approve for Publishing" icon={CheckCircle2} onClick={() => handleAction('approve')} loading={actionLoading === 'approve'} />
                 )}
                 {['published', 'approved'].includes(problem.status) && (
-                  <ActionButton label="🔧 Mark In Progress" onClick={() => handleAction('in_progress')} loading={actionLoading === 'in_progress'} variant="secondary" />
+                  <ActionButton label="Mark In Progress" icon={Wrench} onClick={() => handleAction('in_progress')} loading={actionLoading === 'in_progress'} variant="secondary" />
                 )}
                 {['in_progress'].includes(problem.status) && (
-                  <ActionButton label="🎉 Mark Resolved" onClick={() => handleAction('resolved')} loading={actionLoading === 'resolved'} />
+                  <ActionButton label="Mark Resolved" icon={CheckCircle2} onClick={() => handleAction('resolved')} loading={actionLoading === 'resolved'} />
                 )}
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div className="glass-card p-5">
-              <h3 className="font-semibold text-white mb-3">Quick Timeline</h3>
-              <div className="space-y-2">
-                {problem.statusHistory?.slice(-5).map((h: any, i: number) => (
-                  <div key={h.id} className="flex gap-2 text-xs">
-                    <div className="text-gray-600">{new Date(h.createdAt).toLocaleDateString()}</div>
-                    <div className="text-gray-400">→ {STATUS_LABELS[h.toStatus] || h.toStatus}</div>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── AI Tab ────────────────────────────────────────────────────────────── */}
+      {/* ── Tab 2: AI Pipeline ──────────────────────────────────────────────── */}
       {tab === 'ai' && (
         <div className="space-y-6">
-          {/* AI Pipeline Controls */}
-          <div className="glass-card p-6">
-            <h3 className="font-semibold text-white mb-2">AI Pipeline Controls</h3>
-            <p className="text-sm text-gray-400 mb-6">
-              Run AI analysis then research. AI will examine evidence, assess severity, and generate a complete civic report.
+          <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+            <h3 className="font-bold text-base text-[#14261C] mb-1">AI Pipeline Operations</h3>
+            <p className="text-xs text-[#526D5D] mb-6">
+              Execute evidence verification and deep autonomous research to generate the official civic report.
             </p>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
-              <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                <div className="text-lg mb-2">🎯</div>
-                <div className="font-semibold text-purple-300 text-sm mb-1">Step 1: Evidence Analysis</div>
-                <div className="text-xs text-gray-400 mb-3">AI analyzes the evidence, assesses severity, validates category, and detects duplicates.</div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="p-5 rounded-2xl bg-[#F6FAF5] border border-[#D4E5D2]">
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#D4E5D2] flex items-center justify-center text-[#255C3A] mb-3 shadow-xs">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <div className="font-bold text-[#194C2F] text-xs mb-1">Step 1: Evidence & Duplicate Analysis</div>
+                <div className="text-xs text-[#556F60] mb-4">AI validates evidence authenticity, assesses severity, and checks duplicate reports.</div>
                 <ActionButton
-                  label="🤖 Run AI Analysis"
+                  label="Run Evidence Analysis"
+                  icon={BrainCircuit}
                   onClick={() => handleAction('ai-analyze')}
                   loading={actionLoading === 'ai-analyze'}
                   variant="ai"
                 />
               </div>
 
-              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className="text-lg mb-2">🔬</div>
-                <div className="font-semibold text-blue-300 text-sm mb-1">Step 2: Deep Research</div>
-                <div className="text-xs text-gray-400 mb-3">AI researches the civic issue, finds responsible authorities, and generates the civic report.</div>
+              <div className="p-5 rounded-2xl bg-[#F4F9F6] border border-[#D2E4D6]">
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#D2E4D6] flex items-center justify-center text-[#255C3A] mb-3 shadow-xs">
+                  <Search className="w-5 h-5" />
+                </div>
+                <div className="font-bold text-[#144D32] text-xs mb-1">Step 2: Deep Civic Research</div>
+                <div className="text-xs text-[#556F60] mb-4">Autonomous intelligence queries precedent statistics, finds responsible authorities, and writes report.</div>
                 <ActionButton
-                  label="🔬 Run AI Research"
+                  label="Run Deep Research"
+                  icon={Search}
                   onClick={() => handleAction('ai-research')}
                   loading={actionLoading === 'ai-research'}
                   variant="ai"
@@ -431,122 +443,84 @@ export default function AdminProblemDetailPage() {
                 />
               </div>
             </div>
-
-            {!problem.aiAnalysis && (
-              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-xs text-yellow-300">
-                ⚠️ AI Analysis must be completed before running Research
-              </div>
-            )}
           </div>
 
-          {/* AI Analysis Results */}
-          {problem.aiAnalysis ? (
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-semibold text-white">AI Analysis Results</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">Completed</span>
+          {/* Analysis Results */}
+          {problem.aiAnalysis && (
+            <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#EAF0E8]">
+                <h3 className="font-bold text-base text-[#14261C]">Evidence Analysis Results</h3>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EBF5EA] text-[#1D5432] border border-[#CCE2CA] inline-flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" />
+                  Analysis Completed
+                </span>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Priority Recommendation</div>
-                  <div className={`text-sm font-semibold ${problem.aiAnalysis.priorityRecommendation === 'critical' ? 'text-red-400' : problem.aiAnalysis.priorityRecommendation === 'high' ? 'text-orange-400' : 'text-yellow-400'}`}>
-                    {PRIORITY_ICONS[problem.aiAnalysis.priorityRecommendation]} {problem.aiAnalysis.priorityRecommendation?.toUpperCase()}
+                <div className="p-3.5 rounded-xl bg-[#F8FAF7] border border-[#E2EBE1]">
+                  <div className="text-xs font-bold text-[#567261] uppercase tracking-wider mb-1">Recommended Priority</div>
+                  <div className="text-xs font-bold text-[#14261C] uppercase">
+                    {problem.aiAnalysis.priorityRecommendation} Priority
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Confidence Score</div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 rounded-full bg-white/10 flex-1 overflow-hidden">
-                      <div
-                        className="h-full bg-cyan-500 rounded-full"
-                        style={{ width: `${problem.aiAnalysis.confidenceScore}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium text-white">{problem.aiAnalysis.confidenceScore}%</span>
+                <div className="p-3.5 rounded-xl bg-[#F8FAF7] border border-[#E2EBE1]">
+                  <div className="text-xs font-bold text-[#567261] uppercase tracking-wider mb-1">Confidence Score: {problem.aiAnalysis.confidenceScore}%</div>
+                  <div className="h-2 rounded-full bg-[#E3EBE1] overflow-hidden mt-1.5">
+                    <div className="h-full bg-gradient-to-r from-[#2F6D49] to-[#459663] rounded-full" style={{ width: `${problem.aiAnalysis.confidenceScore}%` }} />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
                 {[
-                  { label: 'Summary', value: problem.aiAnalysis.summary },
+                  { label: 'Executive Summary', value: problem.aiAnalysis.summary },
                   { label: 'Severity Assessment', value: problem.aiAnalysis.severityAssessment },
                   { label: 'Evidence Analysis', value: problem.aiAnalysis.evidenceAnalysis },
-                  { label: 'Category Validation', value: problem.aiAnalysis.categoryValidation },
                   { label: 'Recommended Action', value: problem.aiAnalysis.recommendedAction },
                 ].map((item) => item.value && (
                   <div key={item.label}>
-                    <div className="text-xs text-gray-500 mb-1">{item.label}</div>
-                    <div className="text-sm text-gray-300 bg-white/3 rounded-lg p-3 leading-relaxed">{item.value}</div>
+                    <div className="text-xs font-bold text-[#4E6858] mb-1">{item.label}</div>
+                    <div className="text-xs text-[#283E31] bg-[#F9FBF8] border border-[#E2ECE1] rounded-xl p-3 leading-relaxed">{item.value}</div>
                   </div>
                 ))}
-
-                {problem.aiAnalysis.missingInformation?.length > 0 && (
-                  <div>
-                    <div className="text-xs text-gray-500 mb-2">Missing Information</div>
-                    <ul className="space-y-1">
-                      {problem.aiAnalysis.missingInformation.map((item: string, i: number) => (
-                        <li key={i} className="text-xs text-yellow-300 flex gap-2">
-                          <span>⚠️</span> {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {problem.aiAnalysis.duplicateFlag && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <div className="text-xs text-red-400 font-semibold">
-                      ⚠️ Possible Duplicate Detected ({problem.aiAnalysis.duplicateConfidence}% confidence)
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
-          ) : (
-            <div className="glass-card p-12 text-center">
-              <div className="text-4xl mb-3">🤖</div>
-              <div className="text-white font-semibold mb-2">No AI Analysis Yet</div>
-              <div className="text-sm text-gray-400">Run AI Analysis above to process this problem.</div>
             </div>
           )}
 
           {/* Research Results */}
           {problem.research && (
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <h3 className="font-semibold text-white">AI Research Results</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">Completed</span>
+            <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#EAF0E8]">
+                <h3 className="font-bold text-base text-[#14261C]">Deep Civic Research Findings</h3>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EBF5EA] text-[#1D5432] border border-[#CCE2CA] inline-flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5" />
+                  Research Completed
+                </span>
               </div>
 
               <div className="space-y-3">
                 {[
-                  { label: 'Background', value: problem.research.backgroundInfo },
-                  { label: 'Possible Causes', value: problem.research.possibleCauses },
+                  { label: 'Background Context', value: problem.research.backgroundInfo },
+                  { label: 'Root Causes', value: problem.research.possibleCauses },
                   { label: 'Community Impact', value: problem.research.communityImpact },
-                  { label: 'Relevant Statistics', value: problem.research.relevantStatistics },
-                  { label: 'Potential Solutions', value: problem.research.potentialSolutions },
-                  { label: 'Responsible Authority', value: problem.research.responsibleAuthority },
-                  { label: 'Estimated Resolution Time', value: problem.research.estimatedResolutionTime },
+                  { label: 'Responsible Authorities', value: problem.research.responsibleAuthority },
+                  { label: 'Estimated Resolution Timeframe', value: problem.research.estimatedResolutionTime },
                 ].map((item) => item.value && (
                   <div key={item.label}>
-                    <div className="text-xs text-gray-500 mb-1">{item.label}</div>
-                    <div className="text-sm text-gray-300 bg-white/3 rounded-lg p-3 leading-relaxed">{item.value}</div>
+                    <div className="text-xs font-bold text-[#4E6858] mb-1">{item.label}</div>
+                    <div className="text-xs text-[#283E31] bg-[#F9FBF8] border border-[#E2ECE1] rounded-xl p-3 leading-relaxed">{item.value}</div>
                   </div>
                 ))}
 
                 {problem.research.sources?.length > 0 && (
-                  <div>
-                    <div className="text-xs text-gray-500 mb-2">Sources</div>
-                    <div className="space-y-2">
-                      {problem.research.sources.map((source: any) => (
-                        <div key={source.id} className="flex gap-3 p-3 rounded-lg bg-white/3 border border-white/5">
-                          <div className="flex-1">
-                            <div className="text-xs font-medium text-white">{source.title}</div>
-                            <div className="text-xs text-gray-400 mt-0.5">{source.summary}</div>
-                          </div>
-                          <div className="text-xs text-cyan-400">{source.relevanceScore}%</div>
+                  <div className="pt-2">
+                    <div className="text-xs font-bold text-[#4E6858] mb-2">Verified Sources & Citations</div>
+                    <div className="grid sm:grid-cols-2 gap-2.5">
+                      {problem.research.sources.map((s: any) => (
+                        <div key={s.id} className="p-3 rounded-xl bg-[#F6FAF5] border border-[#DCE6DA]">
+                          <div className="text-xs font-bold text-[#14261C] truncate">{s.title}</div>
+                          <div className="text-[11px] text-[#556F60] mt-0.5 line-clamp-2">{s.summary}</div>
+                          <div className="text-[10px] font-mono font-bold text-[#235E39] mt-1">Relevance: {s.relevanceScore}%</div>
                         </div>
                       ))}
                     </div>
@@ -558,118 +532,82 @@ export default function AdminProblemDetailPage() {
         </div>
       )}
 
-      {/* ── Report Tab ───────────────────────────────────────────────────────── */}
+      {/* ── Tab 3: Civic Report ─────────────────────────────────────────────── */}
       {tab === 'report' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {problem.civicReport ? (
-            <>
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-white">Civic Intelligence Report</h3>
-                  <div className="flex gap-2">
-                    {editingReport ? (
-                      <>
-                        <ActionButton label="💾 Save" onClick={() => handleAction('save-report')} loading={actionLoading === 'save-report'} />
-                        <ActionButton label="Cancel" onClick={() => setEditingReport(false)} variant="secondary" />
-                      </>
-                    ) : (
-                      <ActionButton label="✏️ Edit Report" onClick={() => setEditingReport(true)} variant="secondary" />
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {[
-                    { key: 'overview', label: 'Overview', rows: 6 },
-                    { key: 'whyItMatters', label: 'Why It Matters', rows: 4 },
-                    { key: 'researchFindings', label: 'Research Findings', rows: 5 },
-                    { key: 'recommendedAction', label: 'Recommended Action', rows: 3 },
-                    { key: 'responsibleAuthority', label: 'Responsible Authority', rows: 2 },
-                    { key: 'proposedPostContent', label: 'Social Media Post', rows: 3 },
-                  ].map(({ key, label, rows }) => (
-                    <div key={key}>
-                      <div className="text-xs text-gray-500 mb-2">{label}</div>
-                      {editingReport ? (
-                        <textarea
-                          value={reportEdits[key] || ''}
-                          onChange={(e) => setReportEdits({ ...reportEdits, [key]: e.target.value })}
-                          className="input-civora resize-none text-sm w-full"
-                          rows={rows}
-                        />
-                      ) : (
-                        <div className="text-sm text-gray-300 bg-white/3 rounded-lg p-3 leading-relaxed whitespace-pre-wrap">
-                          {(problem.civicReport as any)[key] || '—'}
-                        </div>
-                      )}
+            <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#EAF0E8]">
+                <h3 className="font-bold text-base text-[#14261C]">Official Civic Intelligence Report</h3>
+                <div>
+                  {editingReport ? (
+                    <div className="flex gap-2">
+                      <ActionButton label="Save Changes" icon={Save} onClick={() => handleAction('save-report')} loading={actionLoading === 'save-report'} />
+                      <ActionButton label="Cancel" onClick={() => setEditingReport(false)} variant="secondary" />
                     </div>
-                  ))}
-
-                  {problem.civicReport.hashtags?.length > 0 && (
-                    <div>
-                      <div className="text-xs text-gray-500 mb-2">Hashtags</div>
-                      <div className="flex flex-wrap gap-2">
-                        {problem.civicReport.hashtags.map((tag: string) => (
-                          <span key={tag} className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  ) : (
+                    <ActionButton label="Edit Report" icon={Edit3} onClick={() => setEditingReport(true)} variant="secondary" />
                   )}
                 </div>
               </div>
 
-              {/* Approve for publishing */}
-              {problem.status === 'awaiting_approval' && (
-                <div className="glass-card p-6 bg-gradient-to-r from-green-500/5 to-cyan-500/5 border border-green-500/10">
-                  <h3 className="font-semibold text-white mb-2">Ready to Approve?</h3>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Review the civic report above. Once approved, you can publish to configured platforms.
-                  </p>
-                  <div className="flex gap-3">
-                    <ActionButton label="👍 Approve Report" onClick={() => handleAction('approve')} loading={actionLoading === 'approve'} />
-                    <ActionButton label="❌ Reject" onClick={() => handleAction('reject')} loading={actionLoading === 'reject'} variant="danger" />
+              <div className="space-y-4">
+                {[
+                  { key: 'overview', label: 'Executive Overview', rows: 4 },
+                  { key: 'whyItMatters', label: 'Why It Matters', rows: 3 },
+                  { key: 'researchFindings', label: 'Key Research Findings', rows: 3 },
+                  { key: 'recommendedAction', label: 'Recommended Action for Authorities', rows: 2 },
+                  { key: 'responsibleAuthority', label: 'Accountable Government Body', rows: 2 },
+                  { key: 'proposedPostContent', label: 'Social Media & Public Post Copy', rows: 2 },
+                ].map(({ key, label, rows }) => (
+                  <div key={key}>
+                    <div className="text-xs font-bold text-[#4B6656] mb-1">{label}</div>
+                    {editingReport ? (
+                      <textarea
+                        value={reportEdits[key] || ''}
+                        onChange={(e) => setReportEdits({ ...reportEdits, [key]: e.target.value })}
+                        className="input-civora resize-none text-xs w-full"
+                        rows={rows}
+                      />
+                    ) : (
+                      <div className="text-xs text-[#233A2D] bg-[#F8FAF7] border border-[#E2EBE1] rounded-xl p-3 leading-relaxed whitespace-pre-wrap">
+                        {(problem.civicReport as any)[key] || '—'}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </>
+                ))}
+              </div>
+            </div>
           ) : (
-            <div className="glass-card p-16 text-center">
-              <div className="text-5xl mb-4">📰</div>
-              <h3 className="font-semibold text-white mb-2">No Civic Report Yet</h3>
-              <p className="text-sm text-gray-400 mb-6">
-                Complete AI Research (in the AI Pipeline tab) to generate a civic intelligence report.
-              </p>
-              <button onClick={() => setTab('ai')} className="btn-primary">
-                Go to AI Pipeline →
-              </button>
+            <div className="glass-card p-16 text-center bg-white border border-[#DCE5DA]">
+              <Newspaper className="w-10 h-10 text-[#718D7D] mx-auto mb-2" />
+              <h3 className="font-bold text-[#14261C] mb-2">No Civic Report Generated Yet</h3>
+              <p className="text-xs text-[#5C7566] mb-4">Run Deep Research in the AI Pipeline tab to generate the full dossier.</p>
+              <button onClick={() => setTab('ai')} className="btn-primary text-xs">Go to AI Pipeline →</button>
             </div>
           )}
         </div>
       )}
 
-      {/* ── Publishing Tab ────────────────────────────────────────────────────── */}
+      {/* ── Tab 4: Publishing ───────────────────────────────────────────────── */}
       {tab === 'publishing' && (
-        <div className="space-y-4">
-          <div className="glass-card p-6">
-            <h3 className="font-semibold text-white mb-4">Platform Status</h3>
+        <div className="space-y-6">
+          <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+            <h3 className="font-bold text-base text-[#14261C] mb-4 pb-2 border-b border-[#EAF0E8]">Platform Connectors</h3>
             {publishingStatus ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 {Object.entries(publishingStatus.platforms as Record<string, boolean>).map(([platform, configured]) => (
                   <div
                     key={platform}
-                    className={`p-3 rounded-xl border text-center ${
+                    className={`p-3.5 rounded-xl border text-center ${
                       configured
-                        ? 'bg-green-500/10 border-green-500/20'
-                        : 'bg-white/5 border-white/10'
+                        ? 'bg-[#EBF5EA] border-[#CCE2CA]'
+                        : 'bg-[#F9FAF8] border-[#E5ECE3]'
                     }`}
                   >
-                    <div className="text-lg mb-1">
-                      {platform === 'linkedin' ? '💼' : platform === 'twitter' ? '🐦' : platform === 'wordpress' ? '📝' : '🔗'}
-                    </div>
-                    <div className="text-xs font-medium text-white capitalize">{platform}</div>
-                    <div className={`text-xs mt-1 ${configured ? 'text-green-400' : 'text-gray-600'}`}>
-                      {configured ? '● Configured' : '○ Not set'}
+                    <div className="text-xs font-bold text-[#14261C] capitalize mb-1">{platform}</div>
+                    <div className={`text-[11px] font-bold ${configured ? 'text-[#1D5432]' : 'text-[#879E90]'}`}>
+                      {configured ? '● Connected' : '○ Not set'}
                     </div>
                   </div>
                 ))}
@@ -678,160 +616,129 @@ export default function AdminProblemDetailPage() {
               <div className="skeleton h-24 rounded-xl mb-6" />
             )}
 
-            {/* Publication Results & Links */}
+            {/* Active Published Links */}
             {publishingResults.length > 0 && (
               <div className="mb-6 space-y-3">
-                <h4 className="text-sm font-semibold text-white">Publication Status & Links</h4>
+                <h4 className="text-xs font-bold text-[#4B6656] uppercase tracking-wider">Live Publications & History</h4>
                 <div className="space-y-2">
                   {publishingResults.map((res: any) => (
                     <div
                       key={res.id}
                       className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         res.status === 'published'
-                          ? 'bg-green-500/10 border-green-500/20'
-                          : res.status === 'failed'
-                          ? 'bg-red-500/10 border-red-500/20'
-                          : 'bg-white/5 border-white/10'
+                          ? 'bg-[#EBF5EA] border-[#CCE2CA]'
+                          : 'bg-[#FDF2F2] border-[#F9CACA]'
                       }`}
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-white capitalize">
-                            {res.platform === 'wordpress' ? '📝 WordPress' : res.platform === 'twitter' ? '🐦 Twitter' : res.platform === 'linkedin' ? '💼 LinkedIn' : '🔗 Webhook'}
+                          <span className="text-xs font-bold text-[#14261C] capitalize">
+                            {res.platform} Portal
                           </span>
                           <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
                               res.status === 'published'
-                                ? 'bg-green-500/20 text-green-400'
-                                : res.status === 'failed'
-                                ? 'bg-red-500/20 text-red-400'
-                                : 'bg-yellow-500/20 text-yellow-400'
+                                ? 'bg-[#D6ECD3] text-[#1B4D2E]'
+                                : 'bg-[#FBD5D5] text-[#9E1E1E]'
                             }`}
                           >
-                            {res.status?.toUpperCase()}
+                            {res.status}
                           </span>
                         </div>
                         {res.publishedAt && (
-                          <div className="text-xs text-gray-400 mt-1">
-                            Published at {new Date(res.publishedAt).toLocaleString()}
-                          </div>
-                        )}
-                        {res.status === 'failed' && res.errorMessage && (
-                          <div className="text-xs text-red-300 mt-1">
-                            Error: {res.errorMessage}
+                          <div className="text-[11px] text-[#556F60] mt-0.5">
+                            Published: {new Date(res.publishedAt).toLocaleString()}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {res.publishedUrl && (
-                          <a
-                            href={res.publishedUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all"
-                          >
-                            <span>🔗 View Live Post</span>
-                          </a>
-                        )}
-                        {res.status === 'failed' && res.jobId && (
-                          <ActionButton
-                            label="🔄 Retry"
-                            onClick={async () => {
-                              setActionLoading(`retry-${res.id}`);
-                              try {
-                                await api.retryPublishing(res.jobId);
-                                setStatusMsg('🔄 Retried publishing job');
-                                await fetch();
-                              } catch (e: any) {
-                                setStatusMsg(`❌ Retry failed: ${e.message}`);
-                              } finally {
-                                setActionLoading(null);
-                              }
-                            }}
-                            loading={actionLoading === `retry-${res.id}`}
-                            variant="secondary"
-                          />
-                        )}
-                      </div>
+                      {res.publishedUrl && (
+                        <a
+                          href={res.publishedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary text-xs px-3.5 py-1.5 rounded-lg shadow-xs inline-flex items-center gap-1.5"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          View Live Post
+                        </a>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Publishing Action Controls */}
+            {/* Publishing Controls */}
             {['approved', 'published'].includes(problem.status) ? (
               <ActionButton
-                label={problem.status === 'published' ? '🔄 Re-publish / Publish Updates' : '🚀 Publish to All Configured Platforms'}
+                label={problem.status === 'published' ? 'Re-publish Updates' : 'Publish to Connected Platforms'}
+                icon={Globe}
                 onClick={() => handleAction('publish')}
                 loading={actionLoading === 'publish'}
               />
             ) : problem.status === 'awaiting_approval' ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className="flex-1 text-xs text-blue-200">
-                  Civic report is ready! Approve this report to enable publishing.
-                </div>
-                <div className="flex gap-2">
-                  <ActionButton
-                    label="👍 Approve & Publish"
-                    onClick={async () => {
-                      setActionLoading('approve-publish');
-                      try {
-                        await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
-                        await api.publishProblem(id);
-                        setStatusMsg('🌐 Approved and published successfully!');
-                        await fetch();
-                      } catch (err: any) {
-                        setStatusMsg(`❌ Error: ${err.message}`);
-                      } finally {
-                        setActionLoading(null);
-                      }
-                    }}
-                    loading={actionLoading === 'approve-publish'}
-                  />
-                </div>
-              </div>
-            ) : problem.civicReport ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
-                <div className="flex-1 text-xs text-yellow-200">
-                  Civic report exists. Please approve the problem before publishing.
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-[#EAF4E9] border border-[#CCE2CA]">
+                <div className="flex-1 text-xs text-[#1E5231] font-semibold">
+                  Civic report is approved and ready. Publish directly to connected platforms.
                 </div>
                 <ActionButton
-                  label="👍 Approve Problem"
-                  onClick={() => handleAction('approve')}
-                  loading={actionLoading === 'approve'}
+                  label="Approve & Publish"
+                  icon={CheckCircle2}
+                  onClick={async () => {
+                    setActionLoading('approve-publish');
+                    try {
+                      await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
+                      await api.publishProblem(id);
+                      setStatusMsg('Approved and published successfully!');
+                      await fetch();
+                    } catch (err: any) {
+                      setStatusMsg(`Error: ${err.message}`);
+                    } finally {
+                      setActionLoading(null);
+                    }
+                  }}
+                  loading={actionLoading === 'approve-publish'}
                 />
               </div>
+            ) : problem.civicReport ? (
+              <div className="flex items-center justify-between p-4 rounded-xl bg-[#FFF8EB] border border-[#FBE0B8]">
+                <div className="text-xs text-[#8A560F] font-semibold">
+                  Report is generated. Approve problem before publishing.
+                </div>
+                <ActionButton label="Approve Problem" icon={CheckCircle2} onClick={() => handleAction('approve')} loading={actionLoading === 'approve'} />
+              </div>
             ) : (
-              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-xs text-yellow-300">
-                ⚠️ Complete the AI Pipeline (Evidence Analysis + Deep Research) first to generate the Civic Report before publishing.
+              <div className="p-3.5 rounded-xl bg-[#FFF8EB] border border-[#FBE0B8] text-xs font-semibold text-[#8A560F]">
+                Complete the AI Pipeline (Evidence Analysis + Deep Research) first to generate the Civic Report before publishing.
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ── History Tab ──────────────────────────────────────────────────────── */}
+      {/* ── Tab 5: History ──────────────────────────────────────────────────── */}
       {tab === 'history' && (
-        <div className="glass-card p-6">
-          <h3 className="font-semibold text-white mb-6">Full Status History</h3>
-          <div className="space-y-1">
-            {problem.statusHistory?.map((h: any, i: number) => (
+        <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
+          <h3 className="font-bold text-base text-[#14261C] mb-6 pb-2 border-b border-[#EAF0E8]">Audit Log & State Transitions</h3>
+          <div className="space-y-2">
+            {problem.statusHistory?.map((h: any) => (
               <div key={h.id} className="timeline-item">
                 <div className="timeline-dot" />
                 <div className="pb-6">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-xs font-bold text-[#14261C]">
                       → {STATUS_LABELS[h.toStatus] || h.toStatus}
                     </span>
-                    <span className="text-xs text-gray-500">{new Date(h.createdAt).toLocaleString()}</span>
+                    <span className="text-[11px] text-[#698575]">{new Date(h.createdAt).toLocaleString()}</span>
                   </div>
                   {h.changedByName && (
-                    <div className="text-xs text-gray-500">by {h.changedByName}</div>
+                    <div className="text-[11px] text-[#4E6657]">Action by: <strong>{h.changedByName}</strong></div>
                   )}
                   {h.notes && (
-                    <div className="text-xs text-gray-400 mt-1 bg-white/3 p-2 rounded-lg">{h.notes}</div>
+                    <div className="text-xs text-[#2A4133] mt-1 bg-[#F5FAF3] p-2.5 rounded-lg border border-[#E2EAE0]">
+                      {h.notes}
+                    </div>
                   )}
                 </div>
               </div>

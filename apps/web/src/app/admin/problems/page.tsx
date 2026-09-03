@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { Search, MapPin, Paperclip, ArrowRight, Inbox } from 'lucide-react';
 
 const STATUS_LABELS: Record<string, string> = {
   submitted: 'Submitted',
@@ -37,13 +38,6 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: 'badge-low',
 };
 
-const PRIORITY_ICONS: Record<string, string> = {
-  critical: '🔴',
-  high: '🟠',
-  medium: '🟡',
-  low: '🟢',
-};
-
 export default function AdminProblemsPage() {
   const [problems, setProblems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,29 +70,32 @@ export default function AdminProblemsPage() {
   useEffect(() => { fetchProblems(); }, [page, search, statusFilter, priorityFilter]);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E3EBE1]">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Problems Queue</h1>
-          <p className="text-gray-400 text-sm">
-            {pagination ? `${pagination.total} total problems` : 'Loading...'}
+          <h1 className="text-2xl font-extrabold text-[#14261C] tracking-tight">Problems Queue</h1>
+          <p className="text-[#516B5B] text-sm">
+            {pagination ? `${pagination.total} total community reports in pipeline` : 'Loading queue...'}
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="glass-card p-4 mb-6 flex flex-wrap gap-3">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="input-civora flex-1 min-w-48"
-          placeholder="Search by title, ID..."
-        />
+      {/* Filter Bar */}
+      <div className="glass-card p-4 flex flex-wrap gap-3 bg-white border border-[#DCE6DA]">
+        <div className="flex-1 min-w-[240px] relative">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="input-civora w-full"
+            placeholder="Search by title, location, or Ticket ID..."
+          />
+        </div>
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="input-civora w-48"
+          className="input-civora w-48 font-medium text-xs text-[#223B2B]"
         >
           <option value="">All Statuses</option>
           {Object.entries(STATUS_LABELS).map(([val, label]) => (
@@ -108,105 +105,128 @@ export default function AdminProblemsPage() {
         <select
           value={priorityFilter}
           onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-          className="input-civora w-36"
+          className="input-civora w-40 font-medium text-xs text-[#223B2B]"
         >
-          <option value="">All Priority</option>
-          <option value="critical">🔴 Critical</option>
-          <option value="high">🟠 High</option>
-          <option value="medium">🟡 Medium</option>
-          <option value="low">🟢 Low</option>
+          <option value="">All Priorities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
         </select>
       </div>
 
+      {/* Content */}
       {loading ? (
         <div className="space-y-2">
-          {[...Array(8)].map((_, i) => <div key={i} className="skeleton h-16 rounded-xl" />)}
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="skeleton h-16 rounded-2xl" />
+          ))}
         </div>
       ) : problems.length === 0 ? (
-        <div className="glass-card p-16 text-center">
-          <div className="text-5xl mb-4">📭</div>
-          <h2 className="text-xl font-semibold text-white mb-2">No problems found</h2>
-          <p className="text-gray-400 text-sm">Adjust filters or wait for citizen submissions.</p>
+        <div className="glass-card p-16 text-center bg-white">
+          <Inbox className="w-10 h-10 text-[#718D7D] mx-auto mb-2" />
+          <h2 className="text-lg font-bold text-[#14261C] mb-1">No community reports found</h2>
+          <p className="text-xs text-[#5D7666]">Try adjusting your search criteria or filter selections.</p>
         </div>
       ) : (
         <>
-          <div className="glass-card overflow-hidden mb-4">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">ID</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Title</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 hidden md:table-cell">Category</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 hidden lg:table-cell">Submitter</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Priority</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 hidden sm:table-cell">Date</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {problems.map((problem) => (
-                  <tr key={problem.id} className="border-b border-white/3 hover:bg-white/3 transition-colors group">
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-cyan-400">{problem.civId}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-white max-w-xs truncate font-medium group-hover:text-cyan-300 transition-colors">
-                        {problem.title}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5 hidden sm:block">
-                        {problem.city} · 📎 {problem.attachmentCount}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-xs text-gray-400">{problem.categoryName}</span>
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="text-xs text-gray-400">{problem.submitterName || '—'}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_COLORS[problem.effectivePriority] || ''}`}>
-                        {PRIORITY_ICONS[problem.effectivePriority]} {problem.effectivePriority?.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[problem.status] || 'badge-submitted'}`}>
-                        {STATUS_LABELS[problem.status] || problem.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className="text-xs text-gray-500">
-                        {new Date(problem.createdAt).toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/problems/${problem.id}`}
-                        className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors px-2 py-1 rounded-lg hover:bg-cyan-500/10"
-                      >
-                        Manage →
-                      </Link>
-                    </td>
+          <div className="glass-card overflow-hidden bg-white border border-[#DCE5DA] shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#EAF0E8] bg-[#F7FAF6] text-[11px] font-bold uppercase tracking-wider text-[#4E6857]">
+                    <th className="px-5 py-3.5">Ticket ID</th>
+                    <th className="px-5 py-3.5">Problem Title</th>
+                    <th className="px-5 py-3.5 hidden md:table-cell">Category</th>
+                    <th className="px-5 py-3.5 hidden lg:table-cell">Submitter</th>
+                    <th className="px-5 py-3.5">Priority</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 hidden sm:table-cell">Date</th>
+                    <th className="px-5 py-3.5 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#EDF3EC]">
+                  {problems.map((problem) => (
+                    <tr
+                      key={problem.id}
+                      className="hover:bg-[#F3F7F2] transition-colors group text-sm"
+                    >
+                      <td className="px-5 py-4">
+                        <span className="font-mono text-xs font-bold text-[#205434] bg-[#EBF4E8] px-2.5 py-1 rounded-md border border-[#CCE2CA] whitespace-nowrap">
+                          {problem.civId}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 max-w-xs sm:max-w-md">
+                        <div className="font-bold text-[#14261C] group-hover:text-[#215735] truncate transition-colors">
+                          {problem.title}
+                        </div>
+                        <div className="text-xs text-[#5E7666] mt-0.5 flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-[#779483]" />
+                            {problem.city || 'Islamabad'}
+                          </span>
+                          <span>·</span>
+                          <span className="flex items-center gap-1">
+                            <Paperclip className="w-3 h-3 text-[#779483]" />
+                            {problem.attachmentCount || 0} files
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 hidden md:table-cell">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#F0F5EF] text-[#334D3D] border border-[#DEE7DD]">
+                          {problem.categoryName || 'General'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 hidden lg:table-cell">
+                        <span className="text-xs text-[#526B5C] font-medium">
+                          {problem.submitterName || 'Anonymous'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-flex items-center ${PRIORITY_COLORS[problem.effectivePriority] || ''}`}>
+                          {problem.effectivePriority}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${STATUS_COLORS[problem.status] || 'badge-submitted'}`}>
+                          {STATUS_LABELS[problem.status] || problem.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 hidden sm:table-cell text-xs font-mono text-[#617B6B]">
+                        {new Date(problem.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <Link
+                          href={`/admin/problems/${problem.id}`}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-[#1F5434] bg-[#EBF4E8] hover:bg-[#D7EBD4] border border-[#CDE3CB] px-3 py-1.5 rounded-lg transition-all"
+                        >
+                          Studio
+                          <ArrowRight className="w-3 h-3" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="btn-secondary text-sm disabled:opacity-30 px-3 py-2"
+                className="btn-secondary text-xs disabled:opacity-40 px-3.5 py-2"
               >
                 ← Prev
               </button>
-              <span className="text-sm text-gray-400">Page {page} of {pagination.totalPages}</span>
+              <span className="text-xs font-bold text-[#4E6857]">
+                Page {page} of {pagination.totalPages}
+              </span>
               <button
-                onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+                onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                 disabled={page === pagination.totalPages}
-                className="btn-secondary text-sm disabled:opacity-30 px-3 py-2"
+                className="btn-secondary text-xs disabled:opacity-40 px-3.5 py-2"
               >
                 Next →
               </button>
