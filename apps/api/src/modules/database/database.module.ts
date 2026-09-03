@@ -12,7 +12,10 @@ export const DATABASE_TOKEN = 'DATABASE';
     {
       provide: DATABASE_TOKEN,
       useFactory: (config: ConfigService) => {
-        const url = config.getOrThrow<string>('DATABASE_URL');
+        const url =
+          config.get<string>('DATABASE_URL') ||
+          process.env.DATABASE_URL ||
+          'postgresql://civora_user:civora_pass@localhost:5432/civora';
         const client = postgres(url, { max: 10 });
         return drizzle(client, { schema });
       },

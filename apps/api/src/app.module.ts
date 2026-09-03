@@ -19,7 +19,7 @@ import { DatabaseModule } from './modules/database/database.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath: ['.env', '../../.env', '../.env', 'apps/api/.env'],
     }),
     ThrottlerModule.forRoot([
       {

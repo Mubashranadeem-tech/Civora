@@ -5,6 +5,8 @@
   "description": "Civora — AI-Powered Civic Problem Reporting & Resolution Platform",
   "scripts": {
     "dev": "concurrently \"pnpm --filter @civora/api dev\" \"pnpm --filter @civora/web dev\"",
+    "dev:web": "pnpm --filter @civora/web dev",
+    "dev:api": "pnpm --filter @civora/api dev",
     "build": "pnpm --filter @civora/db build && pnpm --filter @civora/api build && pnpm --filter @civora/web build",
     "db:generate": "pnpm --filter @civora/db generate",
     "db:migrate": "pnpm --filter @civora/db migrate",
