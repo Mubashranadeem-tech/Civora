@@ -50,6 +50,11 @@ export class CreateProblemDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(30)
+  cnic?: string;
+
+  @IsString()
+  @IsOptional()
   latitude?: string;
 
   @IsString()
