@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: civora-postgres
+    environment:
+      POSTGRES_DB: civora
+      POSTGRES_USER: civora_user
+      POSTGRES_PASSWORD: civora_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - civora_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civora_user -d civora"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: civora-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - civora_redisdata:/data
+
+volumes:
+  civora_pgdata:
+  civora_redisdata:

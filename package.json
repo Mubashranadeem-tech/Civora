@@ -1,0 +1,26 @@
+{
+  "name": "civora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Civora — AI-Powered Civic Problem Reporting & Resolution Platform",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @civora/api dev\" \"pnpm --filter @civora/web dev\"",
+    "build": "pnpm --filter @civora/db build && pnpm --filter @civora/api build && pnpm --filter @civora/web build",
+    "db:generate": "pnpm --filter @civora/db generate",
+    "db:migrate": "pnpm --filter @civora/db migrate",
+    "db:seed": "pnpm --filter @civora/db seed",
+    "db:studio": "pnpm --filter @civora/db studio",
+    "typecheck": "pnpm --filter @civora/api typecheck && pnpm --filter @civora/web typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @civora/api test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
