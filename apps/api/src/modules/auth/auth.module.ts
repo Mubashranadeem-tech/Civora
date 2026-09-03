@@ -11,9 +11,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => ({
-        secret: config.getOrThrow<string>('JWT_SECRET'),
+        secret:
+          config?.get?.('JWT_SECRET') ||
+          process.env.JWT_SECRET ||
+          'civora-super-secret-jwt-dev-key-2026!',
         signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN', '7d'),
+          expiresIn: config?.get?.('JWT_EXPIRES_IN') || '7d',
         },
       }),
       inject: [ConfigService],
