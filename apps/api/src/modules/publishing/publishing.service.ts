@@ -125,7 +125,7 @@ const longContent = [
       }
 
       try {
-          const platformContent = platform === 'wordpress' ? longContent : shortContent;
+    const platformContent = ['wordpress', 'webhook'].includes(platform) ? longContent : shortContent;
           const result = await adapter.publish(platformContent);
 
         await this.db.insert(publishingResults).values({
