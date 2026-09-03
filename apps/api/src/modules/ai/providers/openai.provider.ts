@@ -15,14 +15,17 @@ export class OpenAiProvider implements AiProvider {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    const groqKey = config.get<string>('GROQ_API_KEY');
-    const openAiKey = config.get<string>('OPENAI_API_KEY');
+    const groqKey = config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
     const apiKey = groqKey || openAiKey;
 
-    const defaultModel = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o';
-    this.model = config.get<string>('AI_MODEL') || config.get<string>('OPENAI_MODEL') || defaultModel;
+    const defaultModel = groqKey ? 'qwen/qwen3.6-27b' : 'gpt-4o';
+    this.model = config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || defaultModel;
 
-    const baseURL = config.get<string>('OPENAI_BASE_URL') || (groqKey ? 'https://api.groq.com/openai/v1' : undefined);
+    const baseURL =
+      config?.get?.<string>('OPENAI_BASE_URL') ||
+      process.env.OPENAI_BASE_URL ||
+      (groqKey ? 'https://api.groq.com/openai/v1' : undefined);
 
     if (!apiKey) {
       this.logger.warn('⚠️  Neither GROQ_API_KEY nor OPENAI_API_KEY configured — AI features will be unavailable');
