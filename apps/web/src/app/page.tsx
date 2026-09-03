@@ -194,7 +194,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link
-              href="/dashboard"
+              href="/login?role=citizen"
               className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base transition-all duration-200 overflow-hidden"
               style={{
                 background: 'linear-gradient(135deg, #0d4a7a 0%, #0ea5c9 100%)',
@@ -207,10 +207,10 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="/admin"
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base glass border border-white/10 hover:border-white/20 transition-all duration-200"
+              href="/login?role=admin"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base glass border border-white/10 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all duration-200"
             >
-              <span className="text-xl">⚙️</span>
+              <span className="text-xl">🛡️</span>
               Admin Dashboard
             </Link>
           </div>
