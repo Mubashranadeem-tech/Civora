@@ -122,18 +122,16 @@ export class WordPressAdapter implements PublishingAdapter {
     const cleanTitle = (title || 'Civic Problem Report').replace(/^#+\s*/, '').trim();
     const cleanContent = rest.join('\n').trim() || content;
 
-    const auth = Buffer.from(`${this.wpUser || ''}:${this.wpPass || ''}`).toString('base64');
     let endpoint = this.wpUrl!.replace(/\/+$/, '');
-
     const headers: Record<string, string> = {
-      Authorization: `Basic ${auth}`,
       'Content-Type': 'application/json',
     };
 
     let body: any;
 
     if (endpoint.includes('public-api.wordpress.com')) {
-      // WordPress.com REST API
+      // WordPress.com REST API uses Bearer token authentication
+      headers['Authorization'] = `Bearer ${this.wpPass}`;
       endpoint = `${endpoint}/posts/new`;
       body = {
         title: cleanTitle,
@@ -141,7 +139,9 @@ export class WordPressAdapter implements PublishingAdapter {
         status: 'publish',
       };
     } else {
-      // Self-Hosted / Standard WordPress REST API
+      // Self-Hosted / Standard WordPress REST API uses Basic auth with Application Password
+      const auth = Buffer.from(`${this.wpUser || ''}:${this.wpPass || ''}`).toString('base64');
+      headers['Authorization'] = `Basic ${auth}`;
       if (!endpoint.includes('/wp-json')) {
         endpoint = `${endpoint}/wp-json/wp/v2/posts`;
       }

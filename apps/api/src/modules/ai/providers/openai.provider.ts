@@ -19,7 +19,7 @@ export class OpenAiProvider implements AiProvider {
     const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
     const apiKey = groqKey || openAiKey;
 
-    const defaultModel = groqKey ? 'qwen/qwen3.6-27b' : 'gpt-4o';
+    const defaultModel = groqKey ? 'openai/gpt-oss-120b' : 'gpt-4o';
     this.model = config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || defaultModel;
 
     const baseURL =
@@ -44,9 +44,21 @@ export class OpenAiProvider implements AiProvider {
     }
   }
 
+  private cleanJson(text: string): string {
+    if (!text) return '{}';
+    // Remove think blocks if any
+    let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    // Remove markdown code blocks if wrapped
+    const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (jsonMatch) {
+      cleaned = jsonMatch[1].trim();
+    }
+    return cleaned;
+  }
+
   private async chat(systemPrompt: string, userPrompt: string): Promise<string> {
     if (!this.client) {
-      throw new Error('AI service is not configured. Please set OPENAI_API_KEY.');
+      throw new Error('AI service is not configured. Please set OPENAI_API_KEY or GROQ_API_KEY.');
     }
 
     const response = await this.client.chat.completions.create({
@@ -59,7 +71,8 @@ export class OpenAiProvider implements AiProvider {
       response_format: { type: 'json_object' },
     });
 
-    return response.choices[0].message.content || '{}';
+    const raw = response.choices[0]?.message?.content || '{}';
+    return this.cleanJson(raw);
   }
 
   async analyzeEvidence(problem: ProblemContext): Promise<AiAnalysisResult> {

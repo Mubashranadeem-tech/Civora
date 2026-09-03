@@ -180,23 +180,31 @@ export class AiService {
           backgroundInfo: researchResult.backgroundInfo,
           possibleCauses: researchResult.possibleCauses,
           communityImpact: researchResult.communityImpact,
+          relevantStatistics: researchResult.relevantStatistics,
+          similarIncidents: researchResult.similarIncidents,
+          potentialSolutions: researchResult.potentialSolutions,
+          responsibleAuthority: researchResult.responsibleAuthority,
+          estimatedResolutionTime: researchResult.estimatedResolutionTime,
           completedAt: new Date(),
           updatedAt: new Date(),
         },
       })
       .returning();
 
-    // Save sources
-    if (researchResult.sources?.length > 0) {
-      await this.db.insert(researchSources).values(
-        researchResult.sources.map((s) => ({
-          researchId: savedResearch.id,
-          title: s.title,
-          url: s.url || null,
-          summary: s.summary,
-          relevanceScore: s.relevanceScore,
-        })),
-      );
+    // Clean and save sources
+    if (savedResearch?.id) {
+      await this.db.delete(researchSources).where(eq(researchSources.researchId, savedResearch.id));
+      if (researchResult.sources?.length > 0) {
+        await this.db.insert(researchSources).values(
+          researchResult.sources.map((s) => ({
+            researchId: savedResearch.id,
+            title: s.title,
+            url: s.url || null,
+            summary: s.summary,
+            relevanceScore: s.relevanceScore,
+          })),
+        );
+      }
     }
 
     // Generate civic report
@@ -219,7 +227,13 @@ export class AiService {
         target: civicReports.problemId,
         set: {
           overview: reportResult.overview,
+          whyItMatters: reportResult.whyItMatters,
           researchFindings: reportResult.researchFindings,
+          severity: reportResult.severity,
+          recommendedAction: reportResult.recommendedAction,
+          responsibleAuthority: reportResult.responsibleAuthority,
+          proposedPostContent: reportResult.proposedPostContent,
+          hashtags: reportResult.hashtags,
           updatedAt: new Date(),
         },
       });

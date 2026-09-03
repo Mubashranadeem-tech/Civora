@@ -198,6 +198,7 @@ export class PublishingService {
           .set({
             status: 'published',
             publishedUrl: published.url,
+            errorMessage: null,
             publishedAt: new Date(),
             retryCount: result.retryCount + 1,
             updatedAt: new Date(),

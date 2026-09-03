@@ -80,6 +80,7 @@ export default function AdminProblemDetailPage() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
   const [publishingStatus, setPublishingStatus] = useState<any>(null);
+  const [publishingResults, setPublishingResults] = useState<any[]>([]);
   const [editingReport, setEditingReport] = useState(false);
   const [reportEdits, setReportEdits] = useState<any>({});
 
@@ -96,6 +97,12 @@ export default function AdminProblemDetailPage() {
           responsibleAuthority: data.civicReport.responsibleAuthority,
           proposedPostContent: data.civicReport.proposedPostContent,
         });
+      }
+      try {
+        const results = await api.getPublishingResults(id) as any[];
+        setPublishingResults(results || []);
+      } catch {
+        // ignore
       }
     } catch {
       setStatusMsg('Problem not found');
@@ -671,16 +678,134 @@ export default function AdminProblemDetailPage() {
               <div className="skeleton h-24 rounded-xl mb-6" />
             )}
 
-            {problem.status === 'approved' ? (
+            {/* Publication Results & Links */}
+            {publishingResults.length > 0 && (
+              <div className="mb-6 space-y-3">
+                <h4 className="text-sm font-semibold text-white">Publication Status & Links</h4>
+                <div className="space-y-2">
+                  {publishingResults.map((res: any) => (
+                    <div
+                      key={res.id}
+                      className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        res.status === 'published'
+                          ? 'bg-green-500/10 border-green-500/20'
+                          : res.status === 'failed'
+                          ? 'bg-red-500/10 border-red-500/20'
+                          : 'bg-white/5 border-white/10'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-white capitalize">
+                            {res.platform === 'wordpress' ? '📝 WordPress' : res.platform === 'twitter' ? '🐦 Twitter' : res.platform === 'linkedin' ? '💼 LinkedIn' : '🔗 Webhook'}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              res.status === 'published'
+                                ? 'bg-green-500/20 text-green-400'
+                                : res.status === 'failed'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-yellow-500/20 text-yellow-400'
+                            }`}
+                          >
+                            {res.status?.toUpperCase()}
+                          </span>
+                        </div>
+                        {res.publishedAt && (
+                          <div className="text-xs text-gray-400 mt-1">
+                            Published at {new Date(res.publishedAt).toLocaleString()}
+                          </div>
+                        )}
+                        {res.status === 'failed' && res.errorMessage && (
+                          <div className="text-xs text-red-300 mt-1">
+                            Error: {res.errorMessage}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {res.publishedUrl && (
+                          <a
+                            href={res.publishedUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all"
+                          >
+                            <span>🔗 View Live Post</span>
+                          </a>
+                        )}
+                        {res.status === 'failed' && res.jobId && (
+                          <ActionButton
+                            label="🔄 Retry"
+                            onClick={async () => {
+                              setActionLoading(`retry-${res.id}`);
+                              try {
+                                await api.retryPublishing(res.jobId);
+                                setStatusMsg('🔄 Retried publishing job');
+                                await fetch();
+                              } catch (e: any) {
+                                setStatusMsg(`❌ Retry failed: ${e.message}`);
+                              } finally {
+                                setActionLoading(null);
+                              }
+                            }}
+                            loading={actionLoading === `retry-${res.id}`}
+                            variant="secondary"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Publishing Action Controls */}
+            {['approved', 'published'].includes(problem.status) ? (
               <ActionButton
-                label="🚀 Publish to All Platforms"
+                label={problem.status === 'published' ? '🔄 Re-publish / Publish Updates' : '🚀 Publish to All Configured Platforms'}
                 onClick={() => handleAction('publish')}
                 loading={actionLoading === 'publish'}
               />
+            ) : problem.status === 'awaiting_approval' ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <div className="flex-1 text-xs text-blue-200">
+                  Civic report is ready! Approve this report to enable publishing.
+                </div>
+                <div className="flex gap-2">
+                  <ActionButton
+                    label="👍 Approve & Publish"
+                    onClick={async () => {
+                      setActionLoading('approve-publish');
+                      try {
+                        await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
+                        await api.publishProblem(id);
+                        setStatusMsg('🌐 Approved and published successfully!');
+                        await fetch();
+                      } catch (err: any) {
+                        setStatusMsg(`❌ Error: ${err.message}`);
+                      } finally {
+                        setActionLoading(null);
+                      }
+                    }}
+                    loading={actionLoading === 'approve-publish'}
+                  />
+                </div>
+              </div>
+            ) : problem.civicReport ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                <div className="flex-1 text-xs text-yellow-200">
+                  Civic report exists. Please approve the problem before publishing.
+                </div>
+                <ActionButton
+                  label="👍 Approve Problem"
+                  onClick={() => handleAction('approve')}
+                  loading={actionLoading === 'approve'}
+                />
+              </div>
             ) : (
               <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-xs text-yellow-300">
-                ⚠️ Problem must be Approved before publishing.
-                {problem.status !== 'awaiting_approval' && ' Complete the AI pipeline first.'}
+                ⚠️ Complete the AI Pipeline (Evidence Analysis + Deep Research) first to generate the Civic Report before publishing.
               </div>
             )}
           </div>
