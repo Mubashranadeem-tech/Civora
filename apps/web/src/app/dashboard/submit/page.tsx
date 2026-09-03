@@ -53,6 +53,8 @@ export default function SubmitProblemPage() {
   const [submitted, setSubmitted] = useState<{ civId: string } | null>(null);
   const [error, setError] = useState('');
 
+  const [declared, setDeclared] = useState(false);
+
   const [form, setForm] = useState({
     categoryId: '',
     typeId: '',
@@ -61,8 +63,7 @@ export default function SubmitProblemPage() {
     city: '',
     area: '',
     address: '',
-    latitude: '',
-    longitude: '',
+    cnic: '',
     userPriority: 'medium',
   });
 
@@ -113,24 +114,13 @@ export default function SubmitProblemPage() {
     setPreviews(previews.filter((_, i) => i !== index));
   };
 
-  const tryGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setForm((f) => ({
-            ...f,
-            latitude: pos.coords.latitude.toString(),
-            longitude: pos.coords.longitude.toString(),
-          }));
-        },
-        () => setError('Location access denied. Please enter location manually.'),
-      );
-    }
-  };
-
   const handleSubmit = async () => {
     if (!form.categoryId || !form.typeId || !form.title || !form.city) {
       setError('Please complete all required fields');
+      return;
+    }
+    if (!declared) {
+      setError('Please confirm the declaration checkbox before submitting');
       return;
     }
 
@@ -147,8 +137,7 @@ export default function SubmitProblemPage() {
       formData.append('city', form.city);
       if (form.area) formData.append('area', form.area);
       if (form.address) formData.append('address', form.address);
-      if (form.latitude) formData.append('latitude', form.latitude);
-      if (form.longitude) formData.append('longitude', form.longitude);
+      if (form.cnic) formData.append('cnic', form.cnic);
       files.forEach((file) => formData.append('files', file));
 
       const result = await api.createProblem(formData) as any;
@@ -372,10 +361,10 @@ export default function SubmitProblemPage() {
           </div>
         )}
 
-        {/* Step 4: Location */}
+        {/* Step 4: Location & Citizen Identification */}
         {step === 4 && (
           <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Location</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Location & Citizen Identification</h2>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="flex-1">
@@ -388,6 +377,7 @@ export default function SubmitProblemPage() {
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                     className="input-civora"
                     placeholder="Karachi, Lahore, Islamabad..."
+                    required
                   />
                 </div>
                 <div className="flex-1">
@@ -403,52 +393,30 @@ export default function SubmitProblemPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Specific Address</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Specific Address / Landmark</label>
                 <input
                   type="text"
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                   className="input-civora"
-                  placeholder="Street number, landmark, or specific location..."
+                  placeholder="Street number, landmark, near market/school..."
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Latitude (optional)</label>
-                  <input
-                    type="text"
-                    value={form.latitude}
-                    onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                    className="input-civora"
-                    placeholder="24.8607"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Longitude (optional)</label>
-                  <input
-                    type="text"
-                    value={form.longitude}
-                    onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                    className="input-civora"
-                    placeholder="67.0011"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Citizen CNIC / National ID Card No.
+                  <span className="ml-2 text-xs text-gray-500">(13 digits, e.g. 61101-1234567-1)</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.cnic}
+                  onChange={(e) => setForm({ ...form, cnic: e.target.value })}
+                  className="input-civora font-mono"
+                  placeholder="61101-1234567-1"
+                  maxLength={15}
+                />
               </div>
-
-              <button
-                onClick={tryGetLocation}
-                className="btn-secondary text-sm"
-                type="button"
-              >
-                📍 Use My Current Location
-              </button>
-
-              {form.latitude && form.longitude && (
-                <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-xs text-green-400">
-                  ✅ GPS coordinates captured: {form.latitude}, {form.longitude}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -490,7 +458,8 @@ export default function SubmitProblemPage() {
                 { label: 'Problem Type', value: selectedType?.name || form.typeId },
                 { label: 'Title', value: form.title },
                 { label: 'Description', value: form.description || '(No description)' },
-                { label: 'Location', value: `${form.city}${form.area ? ', ' + form.area : ''}` },
+                { label: 'Location', value: `${form.city}${form.area ? ', ' + form.area : ''}${form.address ? ' (' + form.address + ')' : ''}` },
+                { label: 'Citizen CNIC', value: form.cnic || '(Not provided)' },
                 { label: 'Priority', value: form.userPriority.charAt(0).toUpperCase() + form.userPriority.slice(1) },
                 { label: 'Attachments', value: `${files.length} file(s)` },
               ].map((row) => (
@@ -499,6 +468,20 @@ export default function SubmitProblemPage() {
                   <div className="text-sm text-white flex-1">{row.value}</div>
                 </div>
               ))}
+            </div>
+
+            {/* User Declaration Checkbox */}
+            <div className="mt-6 p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="user-declaration"
+                checked={declared}
+                onChange={(e) => setDeclared(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded text-cyan-500 focus:ring-cyan-400 bg-white/10 border-white/20 cursor-pointer accent-cyan-500"
+              />
+              <label htmlFor="user-declaration" className="text-xs text-gray-300 leading-relaxed cursor-pointer select-none">
+                I hereby confirm and declare that all information provided in this civic report is true, accurate, submitted on my own behalf, and represents a genuine community issue.
+              </label>
             </div>
 
             {error && (
@@ -531,8 +514,8 @@ export default function SubmitProblemPage() {
         ) : (
           <button
             onClick={handleSubmit}
-            disabled={submitting}
-            className="btn-primary disabled:opacity-40"
+            disabled={submitting || !declared}
+            className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <span className="flex items-center gap-2">
