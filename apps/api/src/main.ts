@@ -15,9 +15,9 @@ async function bootstrap() {
     }));
     app.use(cookieParser());
 
-    // CORS
+    // CORS - Allow frontend domains (Vercel, localhost, etc.)
     app.enableCors({
-      origin: process.env.APP_URL || 'http://localhost:3000',
+      origin: true,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
@@ -33,8 +33,10 @@ async function bootstrap() {
       }),
     );
 
-    // Global prefix
-    app.setGlobalPrefix('api/v1');
+    // Global prefix with root and health excluded
+    app.setGlobalPrefix('api/v1', {
+      exclude: ['/', 'health'],
+    });
 
     const port = process.env.PORT || 4000;
     await app.listen(port, '0.0.0.0');
