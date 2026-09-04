@@ -68,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div>
               <div className="text-base font-bold text-[#14261C]">
-                Civ<span className="gradient-text">ora</span>
+                Civora
               </div>
               <div className="text-xs font-semibold text-[#255C3A]">Admin Console</div>
             </div>
@@ -131,7 +131,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#F0F5EF]">
               <Menu className="w-5 h-5 text-[#14261C]" />
             </button>
-            <span className="font-bold text-[#14261C]">Civ<span className="gradient-text">ora</span> <span className="text-[#255C3A] text-xs font-semibold uppercase ml-1">Admin</span></span>
+            <span className="font-bold text-[#14261C]">Civora <span className="text-[#255C3A] text-xs font-semibold uppercase ml-1">Admin</span></span>
           </div>
         </header>
 

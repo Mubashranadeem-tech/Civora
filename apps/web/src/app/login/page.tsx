@@ -67,7 +67,7 @@ function LoginForm() {
             C
           </div>
           <span className="text-2xl font-extrabold text-[#14261C]">
-            Civ<span className="gradient-text">ora</span>
+            Civora
           </span>
         </Link>
       </div>

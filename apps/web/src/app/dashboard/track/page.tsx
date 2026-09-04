@@ -13,8 +13,8 @@ import {
   ThumbsUp, 
   Globe, 
   Wrench, 
-  PartyPopper,
-  Check
+  Check,
+  MapPin
 } from 'lucide-react';
 
 const STATUS_TIMELINE = [
@@ -27,7 +27,7 @@ const STATUS_TIMELINE = [
   { status: 'approved', label: 'Approved for Publishing', icon: ThumbsUp, desc: 'Authorized for multi-channel dispatch' },
   { status: 'published', label: 'Publicly Published', icon: Globe, desc: 'Broadcast to official channels & social portals' },
   { status: 'in_progress', label: 'In Progress with Authorities', icon: Wrench, desc: 'Departmental actions underway' },
-  { status: 'resolved', label: 'Issue Resolved', icon: PartyPopper, desc: 'Civic complaint successfully rectified' },
+  { status: 'resolved', label: 'Issue Resolved', icon: CheckCircle2, desc: 'Civic complaint successfully rectified' },
 ];
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -118,8 +118,15 @@ export default function TrackProblemPage() {
                   {result.civId}
                 </div>
                 <h2 className="text-xl font-bold text-[#14261C]">{result.title}</h2>
-                <div className="text-xs text-[#597566] mt-1">
-                  {result.categoryName} · 📍 {result.city || 'Islamabad'} · Submitted {new Date(result.createdAt).toLocaleDateString()}
+                <div className="text-xs text-[#597566] mt-1 flex items-center gap-2 flex-wrap">
+                  <span>{result.categoryName}</span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-[#2E6B47]" />
+                    {result.city || 'Islamabad'}
+                  </span>
+                  <span>·</span>
+                  <span>Submitted {new Date(result.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
               <div className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-[#F4F9F2] border border-[#DEEADE] ${PRIORITY_COLORS[result.effectivePriority] || 'text-[#1F5333]'}`}>

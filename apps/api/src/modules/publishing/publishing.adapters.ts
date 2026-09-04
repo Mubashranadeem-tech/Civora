@@ -1,5 +1,32 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
+
+function getEnvFallback(key: string): string | undefined {
+  if (process.env[key]) return process.env[key];
+  try {
+    const envPaths = [
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), '../../.env'),
+      path.resolve(process.cwd(), '../.env'),
+      path.resolve(process.cwd(), 'apps/api/.env'),
+    ];
+    for (const envPath of envPaths) {
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        for (const line of content.split('\n')) {
+          const match = line.match(new RegExp(`^${key}\\s*=\\s*(.*)$`));
+          if (match && match[1]) {
+            const val = match[1].trim().replace(/^["']|["']$/g, '');
+            if (val) return val;
+          }
+        }
+      }
+    }
+  } catch {}
+  return undefined;
+}
 
 export interface PublishingAdapter {
   isConfigured(): boolean;
@@ -185,24 +212,28 @@ export class WebhookAdapter implements PublishingAdapter {
   }
 
   isConfigured(): boolean {
-    return !!this.webhookUrl;
+    const url = this.config?.get?.<string>('WEBHOOK_URL') || process.env.WEBHOOK_URL || getEnvFallback('WEBHOOK_URL') || this.webhookUrl;
+    return !!url && url.trim().length > 0;
   }
 
   async publish(content: string): Promise<{ url: string }> {
-    if (!this.isConfigured()) {
+    const url = this.config?.get?.<string>('WEBHOOK_URL') || process.env.WEBHOOK_URL || getEnvFallback('WEBHOOK_URL') || this.webhookUrl;
+    const secret = this.config?.get?.<string>('WEBHOOK_SECRET') || process.env.WEBHOOK_SECRET || getEnvFallback('WEBHOOK_SECRET') || this.webhookSecret;
+
+    if (!this.isConfigured() || !url) {
       throw new Error('Webhook not configured. Set WEBHOOK_URL');
     }
 
-    const response = await fetch(this.webhookUrl!, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.webhookSecret ? { 'X-Civora-Signature': this.webhookSecret } : {}),
+        ...(secret ? { 'X-Civora-Signature': secret } : {}),
       },
       body: JSON.stringify({
-        source: 'Civora Civic Platform',
+        source: 'Civora Autonomous Intelligence',
         timestamp: new Date().toISOString(),
-        payload: { content },
+        payload: content,
       }),
     });
 
@@ -210,6 +241,6 @@ export class WebhookAdapter implements PublishingAdapter {
       throw new Error(`Webhook failed: ${response.statusText}`);
     }
 
-    return { url: this.webhookUrl! };
+    return { url };
   }
 }

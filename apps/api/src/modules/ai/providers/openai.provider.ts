@@ -19,7 +19,7 @@ export class OpenAiProvider implements AiProvider {
     const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
     const apiKey = groqKey || openAiKey;
 
-    const defaultModel = groqKey ? 'openai/gpt-oss-120b' : 'gpt-4o';
+    const defaultModel = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o';
     this.model = config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || defaultModel;
 
     const baseURL =

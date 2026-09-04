@@ -42,7 +42,7 @@ export default function RegisterPage() {
               C
             </div>
             <span className="text-2xl font-extrabold text-[#14261C]">
-              Civ<span className="gradient-text">ora</span>
+              Civora
             </span>
           </Link>
           <p className="text-[#567262] mt-2 text-xs font-semibold">Join as a verified community member</p>

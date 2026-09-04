@@ -1,6 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import * as fs from 'fs';
+import * as path from 'path';
+
+function getEnvFallback(key: string): string | undefined {
+  if (process.env[key]) return process.env[key];
+  try {
+    const envPaths = [
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), '../../.env'),
+      path.resolve(process.cwd(), '../.env'),
+      path.resolve(process.cwd(), 'apps/api/.env'),
+    ];
+    for (const envPath of envPaths) {
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        for (const line of content.split('\n')) {
+          const match = line.match(new RegExp(`^${key}\\s*=\\s*(.*)$`));
+          if (match && match[1]) {
+            const val = match[1].trim().replace(/^["']|["']$/g, '');
+            if (val) return val;
+          }
+        }
+      }
+    }
+  } catch {}
+  return undefined;
+}
 
 export interface SendEmailOptions {
   to: string;
@@ -13,38 +40,40 @@ export interface SendEmailOptions {
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter: nodemailer.Transporter | null = null;
-  private readonly from: string;
-  private readonly provider: string;
 
   constructor(private readonly config: ConfigService) {
-    this.provider = config.get<string>('EMAIL_PROVIDER', 'console');
-    this.from = config.get<string>('SMTP_FROM', 'Civora <noreply@civora.ai>');
+    this.initTransporter();
+  }
 
-    if (this.provider === 'smtp') {
-      const host = config.get<string>('SMTP_HOST');
-      const port = config.get<number>('SMTP_PORT', 587);
-      const user = config.get<string>('SMTP_USER');
-      const pass = config.get<string>('SMTP_PASS');
+  private initTransporter(): nodemailer.Transporter | null {
+    const provider = this.config.get<string>('EMAIL_PROVIDER') || getEnvFallback('EMAIL_PROVIDER') || 'smtp';
+    if (provider === 'smtp') {
+      const user = this.config.get<string>('SMTP_USER') || getEnvFallback('SMTP_USER') || 'duamehmood2200@gmail.com';
+      const pass = this.config.get<string>('SMTP_PASS') || getEnvFallback('SMTP_PASS') || 'owgimveaphjskzpn';
 
-      if (host && user && pass) {
+      if (user && pass) {
         this.transporter = nodemailer.createTransport({
-          host,
-          port,
-          secure: config.get<boolean>('SMTP_SECURE', false),
-          auth: { user, pass },
+          service: 'gmail',
+          auth: { 
+            user: user.trim(), 
+            pass: pass.trim().replace(/\s+/g, '') 
+          },
         });
-        this.logger.log(`✅ Email service configured (SMTP: ${host})`);
-      } else {
-        this.logger.warn('⚠️  SMTP credentials incomplete — falling back to console logging');
+        this.logger.log(`✅ Email service configured (Gmail SMTP: ${user})`);
+        return this.transporter;
       }
-    } else {
-      this.logger.log('📧 Email provider: console (configure SMTP in .env for real emails)');
     }
+    return null;
   }
 
   async sendEmail(options: SendEmailOptions): Promise<boolean> {
     if (!this.transporter) {
-      // Console fallback — log the email
+      this.initTransporter();
+    }
+
+    const from = this.config.get<string>('SMTP_FROM') || getEnvFallback('SMTP_FROM') || 'Civora Alerts <duamehmood2200@gmail.com>';
+
+    if (!this.transporter) {
       this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       this.logger.log(`📧 EMAIL (console mode)`);
       this.logger.log(`To: ${options.to}`);
@@ -56,13 +85,13 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail({
-        from: this.from,
+        from,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
       });
-      this.logger.log(`✅ Email sent to ${options.to}: ${options.subject}`);
+      this.logger.log(`✅ Real Email sent successfully to ${options.to}: ${options.subject}`);
       return true;
     } catch (err) {
       this.logger.error(`❌ Failed to send email to ${options.to}`, err);
@@ -81,7 +110,7 @@ export class EmailService {
     submittedAt: Date;
     description?: string;
   }): Promise<void> {
-    const adminEmail = this.config.getOrThrow<string>('ADMIN_EMAIL_TO');
+    const adminEmail = this.config.get<string>('ADMIN_EMAIL_TO') || getEnvFallback('ADMIN_EMAIL_TO') || 'duamehmood2200@gmail.com';
     const appUrl = this.config.get<string>('APP_URL', 'http://localhost:3000');
 
     const priorityColors: Record<string, string> = {

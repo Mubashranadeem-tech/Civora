@@ -247,9 +247,12 @@ export class AiService {
     this.logger.log(`✅ AI research complete for: ${problemId}`);
   }
 
-  getConfigStatus(): { provider: string; isConfigured: boolean } {
+  getConfigStatus(): { provider: string; model: string; isConfigured: boolean } {
+    const groqKey = this.config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    const model = this.config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || 'llama-3.3-70b-versatile';
     return {
-      provider: this.config.get<string>('AI_PROVIDER', 'openai'),
+      provider: groqKey ? 'groq' : (this.config.get<string>('AI_PROVIDER') || 'groq'),
+      model,
       isConfigured: this.isConfigured,
     };
   }

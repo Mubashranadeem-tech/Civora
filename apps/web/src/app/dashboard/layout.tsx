@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <span className="text-base font-bold text-[#14261C]">
-                Civ<span className="gradient-text">ora</span>
+                Civora
               </span>
               <div className="text-xs font-semibold text-[#255C3A]">Citizen Portal</div>
             </div>
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#F0F5EF]">
               <Menu className="w-5 h-5 text-[#14261C]" />
             </button>
-            <span className="font-bold text-[#14261C]">Civ<span className="gradient-text">ora</span></span>
+            <span className="font-bold text-[#14261C]">Civora</span>
           </div>
         </header>
 
