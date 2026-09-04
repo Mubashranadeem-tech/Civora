@@ -2,8 +2,6 @@ packages:
   - "apps/*"
   - "packages/*"
 
-dangerouslyAllowAllBuilds: true
-
 allowBuilds:
   '@nestjs/core': true
   es5-ext: true
