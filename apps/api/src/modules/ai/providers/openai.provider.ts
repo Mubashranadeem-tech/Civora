@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   AiProvider,
   AiAnalysisResult,
@@ -8,45 +10,70 @@ import {
   ProblemContext,
 } from '../ai.interface';
 
+export function getEnvFresh(key: string): string | undefined {
+  try {
+    const envPaths = [
+      path.resolve(process.cwd(), 'apps/api/.env'),
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), '../.env'),
+      path.resolve(process.cwd(), '../../.env'),
+    ];
+    for (const envPath of envPaths) {
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        for (const line of content.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('#')) continue;
+          const match = trimmed.match(new RegExp(`^${key}\\s*=\\s*(.*)$`));
+          if (match && match[1]) {
+            const val = match[1].trim().replace(/^["']|["']$/g, '');
+            if (val) return val;
+          }
+        }
+      }
+    }
+  } catch {}
+  return process.env[key];
+}
+
 @Injectable()
 export class OpenAiProvider implements AiProvider {
   private readonly logger = new Logger(OpenAiProvider.name);
-  private client: any;
-  private readonly model: string;
 
-  constructor(private readonly config: ConfigService) {
-    const groqKey = config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
-    const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
+  constructor(private readonly config: ConfigService) {}
+
+  private getClientAndModel(): { client: any; model: string } {
+    const groqKey = getEnvFresh('GROQ_API_KEY') || this.config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    const openAiKey = getEnvFresh('OPENAI_API_KEY') || this.config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
     const apiKey = groqKey || openAiKey;
 
-    const defaultModel = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o';
-    this.model = config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || defaultModel;
+    let model = getEnvFresh('AI_MODEL') || this.config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || (groqKey ? 'openai/gpt-oss-120b' : 'gpt-4o');
+    if (groqKey && (model === 'llama-3.3-70b-versatile' || !model)) {
+      model = 'openai/gpt-oss-120b';
+    }
 
     const baseURL =
-      config?.get?.<string>('OPENAI_BASE_URL') ||
+      getEnvFresh('OPENAI_BASE_URL') ||
+      this.config?.get?.<string>('OPENAI_BASE_URL') ||
       process.env.OPENAI_BASE_URL ||
       (groqKey ? 'https://api.groq.com/openai/v1' : undefined);
 
     if (!apiKey) {
-      this.logger.warn('⚠️  Neither GROQ_API_KEY nor OPENAI_API_KEY configured — AI features will be unavailable');
-      return;
+      throw new Error('AI service is not configured. Please set OPENAI_API_KEY or GROQ_API_KEY.');
     }
 
-    try {
-      const { OpenAI } = require('openai');
-      this.client = new OpenAI({
-        apiKey,
-        ...(baseURL ? { baseURL } : {}),
-      });
-      this.logger.log(`✅ AI provider ready via ${groqKey ? 'Groq' : 'OpenAI'} (model: ${this.model})`);
-    } catch {
-      this.logger.error('Failed to initialize AI client');
-    }
+    const { OpenAI } = require('openai');
+    const client = new OpenAI({
+      apiKey,
+      ...(baseURL ? { baseURL } : {}),
+    });
+
+    return { client, model };
   }
 
   private cleanJson(text: string): string {
     if (!text) return '{}';
-    // Remove think blocks if any
+    // Remove think/reasoning blocks if any
     let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     // Remove markdown code blocks if wrapped
     const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
@@ -57,22 +84,26 @@ export class OpenAiProvider implements AiProvider {
   }
 
   private async chat(systemPrompt: string, userPrompt: string): Promise<string> {
-    if (!this.client) {
-      throw new Error('AI service is not configured. Please set OPENAI_API_KEY or GROQ_API_KEY.');
+    const { client, model } = this.getClientAndModel();
+
+    try {
+      const response = await client.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+      });
+
+      const raw = response.choices[0]?.message?.content || '{}';
+      return this.cleanJson(raw);
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.error?.message || err?.message || 'AI request failed';
+      this.logger.error(`AI completion failed (${model}): ${errMsg}`);
+      throw new Error(`AI service error: ${errMsg}`);
     }
-
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    });
-
-    const raw = response.choices[0]?.message?.content || '{}';
-    return this.cleanJson(raw);
   }
 
   async analyzeEvidence(problem: ProblemContext): Promise<AiAnalysisResult> {

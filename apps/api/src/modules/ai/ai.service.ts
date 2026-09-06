@@ -15,23 +15,24 @@ import {
 } from '@civora/db';
 import { eq } from 'drizzle-orm';
 import { AiProvider, ProblemContext } from './ai.interface';
-import { OpenAiProvider } from './providers/openai.provider';
+import { OpenAiProvider, getEnvFresh } from './providers/openai.provider';
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private readonly provider: AiProvider;
-  private readonly isConfigured: boolean;
 
   constructor(
     private readonly config: ConfigService,
     @Inject(DATABASE_TOKEN) private readonly db: Database,
   ) {
-    const groqKey = config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
-    const openAiKey = config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
-    const apiKey = groqKey || openAiKey;
-    this.isConfigured = !!apiKey;
     this.provider = new OpenAiProvider(config);
+  }
+
+  get isConfigured(): boolean {
+    const groqKey = getEnvFresh('GROQ_API_KEY') || this.config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    const openAiKey = getEnvFresh('OPENAI_API_KEY') || this.config?.get?.<string>('OPENAI_API_KEY') || process.env.OPENAI_API_KEY;
+    return !!(groqKey || openAiKey);
   }
 
   private async buildProblemContext(problemId: string): Promise<ProblemContext> {
@@ -86,8 +87,11 @@ export class AiService {
       .insert(aiAnalyses)
       .values({
         problemId,
-        provider: this.config.get<string>('AI_PROVIDER') || (process.env.GROQ_API_KEY ? 'groq' : 'openai'),
-        model: this.config.get<string>('AI_MODEL') || this.config.get<string>('OPENAI_MODEL') || (process.env.GROQ_API_KEY ? 'llama-3.3-70b-versatile' : 'gpt-4o'),
+        provider: getEnvFresh('GROQ_API_KEY') ? 'groq' : (this.config.get<string>('AI_PROVIDER') || 'openai'),
+        model: (() => {
+          let m = getEnvFresh('AI_MODEL') || this.config.get<string>('AI_MODEL') || this.config.get<string>('OPENAI_MODEL') || 'openai/gpt-oss-120b';
+          return m === 'llama-3.3-70b-versatile' ? 'openai/gpt-oss-120b' : m;
+        })(),
         summary: result.summary,
         severityAssessment: result.severityAssessment,
         priorityRecommendation: result.priorityRecommendation,
@@ -248,10 +252,11 @@ export class AiService {
   }
 
   getConfigStatus(): { provider: string; model: string; isConfigured: boolean } {
-    const groqKey = this.config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
-    const model = this.config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || 'llama-3.3-70b-versatile';
+    const groqKey = getEnvFresh('GROQ_API_KEY') || this.config?.get?.<string>('GROQ_API_KEY') || process.env.GROQ_API_KEY;
+    let model = getEnvFresh('AI_MODEL') || this.config?.get?.<string>('AI_MODEL') || process.env.AI_MODEL || 'openai/gpt-oss-120b';
+    if (model === 'llama-3.3-70b-versatile') model = 'openai/gpt-oss-120b';
     return {
-      provider: groqKey ? 'groq' : (this.config.get<string>('AI_PROVIDER') || 'groq'),
+      provider: groqKey ? 'groq' : (this.config.get<string>('AI_PROVIDER') || 'openai'),
       model,
       isConfigured: this.isConfigured,
     };

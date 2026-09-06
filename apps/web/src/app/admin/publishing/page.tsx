@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Share2, Send, FileText, Webhook, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Share2, Send, FileText, Webhook, CheckCircle2, AlertCircle, ShieldCheck, Facebook } from 'lucide-react';
 
 export default function AdminPublishingPage() {
   const [status, setStatus] = useState<any>(null);
@@ -13,10 +13,11 @@ export default function AdminPublishingPage() {
   }, []);
 
   const PLATFORMS = [
-    { key: 'linkedin', name: 'LinkedIn', icon: Share2, desc: 'Publish executive alerts to municipal pages and official leadership channels' },
-    { key: 'twitter', name: 'Twitter / X', icon: Send, desc: 'Broadcast instant public notices, civic tags, and geotagged incident alerts' },
+    { key: 'facebook', name: 'Facebook', icon: Facebook, desc: 'Broadcast civic incident dossiers and official municipal notices to Facebook Pages and community feeds' },
     { key: 'wordpress', name: 'WordPress', icon: FileText, desc: 'Post full-length editorial civic intelligence articles to WordPress portals' },
     { key: 'webhook', name: 'Webhook', icon: Webhook, desc: 'Push structured JSON payloads directly to municipal API endpoints & external services' },
+    { key: 'twitter', name: 'Twitter / X', icon: Send, desc: 'Broadcast instant public notices, civic tags, and geotagged incident alerts' },
+    { key: 'linkedin', name: 'LinkedIn', icon: Share2, desc: 'Publish executive alerts to municipal pages and official leadership channels' },
   ];
 
   return (
@@ -24,7 +25,7 @@ export default function AdminPublishingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2EBE0]">
         <div>
           <h1 className="text-2xl font-extrabold text-[#13251A] tracking-tight">Multi-Channel Publishing Matrix</h1>
-          <p className="text-sm text-[#546E5E]">Manage automated distribution connectors to WordPress, Twitter/X, and municipal portals.</p>
+          <p className="text-sm text-[#546E5E]">Manage automated distribution connectors to Facebook, WordPress, Webhooks, and social channels.</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D5E4D4] text-xs font-semibold text-[#255C3A] shadow-xs">
           <ShieldCheck className="w-4 h-4 text-[#2F7A4C]" />
@@ -32,7 +33,7 @@ export default function AdminPublishingPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {PLATFORMS.map((item) => {
           const Icon = item.icon;
           const isConfigured = status?.platforms?.[item.key];

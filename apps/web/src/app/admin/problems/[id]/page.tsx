@@ -650,6 +650,11 @@ export default function AdminProblemDetailPage() {
                             Published: {new Date(res.publishedAt).toLocaleString()}
                           </div>
                         )}
+                        {res.errorMessage && (
+                          <div className="text-[11px] text-[#C53030] mt-1 font-medium bg-[#FDE8E8] px-2 py-1 rounded">
+                            {res.errorMessage}
+                          </div>
+                        )}
                       </div>
 
                       {res.publishedUrl && (

@@ -4,19 +4,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 function getEnvFallback(key: string): string | undefined {
-  if (process.env[key]) return process.env[key];
   try {
     const envPaths = [
-      path.resolve(process.cwd(), '.env'),
-      path.resolve(process.cwd(), '../../.env'),
-      path.resolve(process.cwd(), '../.env'),
       path.resolve(process.cwd(), 'apps/api/.env'),
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), '../.env'),
+      path.resolve(process.cwd(), '../../.env'),
     ];
     for (const envPath of envPaths) {
       if (fs.existsSync(envPath)) {
         const content = fs.readFileSync(envPath, 'utf8');
         for (const line of content.split('\n')) {
-          const match = line.match(new RegExp(`^${key}\\s*=\\s*(.*)$`));
+          const trimmed = line.trim();
+          if (trimmed.startsWith('#')) continue;
+          const match = trimmed.match(new RegExp(`^${key}\\s*=\\s*(.*)$`));
           if (match && match[1]) {
             const val = match[1].trim().replace(/^["']|["']$/g, '');
             if (val) return val;
@@ -25,7 +26,7 @@ function getEnvFallback(key: string): string | undefined {
       }
     }
   } catch {}
-  return undefined;
+  return process.env[key] || undefined;
 }
 
 export interface PublishingAdapter {
@@ -244,3 +245,103 @@ export class WebhookAdapter implements PublishingAdapter {
     return { url };
   }
 }
+
+@Injectable()
+export class FacebookAdapter implements PublishingAdapter {
+  private readonly logger = new Logger('FacebookAdapter');
+  private readonly appId: string | undefined;
+  private readonly appSecret: string | undefined;
+  private readonly pageId: string | undefined;
+  private readonly pageAccessToken: string | undefined;
+
+  constructor(private readonly config: ConfigService) {
+    this.appId = config?.get?.<string>('FACEBOOK_APP_ID') || process.env.FACEBOOK_APP_ID || getEnvFallback('FACEBOOK_APP_ID');
+    this.appSecret = config?.get?.<string>('FACEBOOK_APP_SECRET') || process.env.FACEBOOK_APP_SECRET || getEnvFallback('FACEBOOK_APP_SECRET');
+    this.pageId = config?.get?.<string>('FACEBOOK_PAGE_ID') || process.env.FACEBOOK_PAGE_ID || getEnvFallback('FACEBOOK_PAGE_ID');
+    this.pageAccessToken =
+      config?.get?.<string>('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      config?.get?.<string>('FACEBOOK_ACCESS_TOKEN') ||
+      getEnvFallback('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      getEnvFallback('FACEBOOK_ACCESS_TOKEN') ||
+      process.env.FACEBOOK_PAGE_ACCESS_TOKEN ||
+      process.env.FACEBOOK_ACCESS_TOKEN;
+  }
+
+  isConfigured(): boolean {
+    const appId = this.config?.get?.<string>('FACEBOOK_APP_ID') || getEnvFallback('FACEBOOK_APP_ID') || process.env.FACEBOOK_APP_ID || this.appId;
+    const appSecret = this.config?.get?.<string>('FACEBOOK_APP_SECRET') || getEnvFallback('FACEBOOK_APP_SECRET') || process.env.FACEBOOK_APP_SECRET || this.appSecret;
+    const pageToken =
+      this.config?.get?.<string>('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      this.config?.get?.<string>('FACEBOOK_ACCESS_TOKEN') ||
+      getEnvFallback('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      getEnvFallback('FACEBOOK_ACCESS_TOKEN') ||
+      process.env.FACEBOOK_PAGE_ACCESS_TOKEN ||
+      process.env.FACEBOOK_ACCESS_TOKEN ||
+      this.pageAccessToken;
+
+    return !!(pageToken || (appId && appSecret));
+  }
+
+  async publish(content: string): Promise<{ url: string }> {
+    const appId = this.config?.get?.<string>('FACEBOOK_APP_ID') || getEnvFallback('FACEBOOK_APP_ID') || process.env.FACEBOOK_APP_ID || this.appId;
+    const appSecret = this.config?.get?.<string>('FACEBOOK_APP_SECRET') || getEnvFallback('FACEBOOK_APP_SECRET') || process.env.FACEBOOK_APP_SECRET || this.appSecret;
+    const pageId = getEnvFallback('FACEBOOK_PAGE_ID') || this.config?.get?.<string>('FACEBOOK_PAGE_ID') || process.env.FACEBOOK_PAGE_ID || this.pageId || 'me';
+    let token =
+      getEnvFallback('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      getEnvFallback('FACEBOOK_ACCESS_TOKEN') ||
+      this.config?.get?.<string>('FACEBOOK_PAGE_ACCESS_TOKEN') ||
+      this.config?.get?.<string>('FACEBOOK_ACCESS_TOKEN') ||
+      process.env.FACEBOOK_PAGE_ACCESS_TOKEN ||
+      process.env.FACEBOOK_ACCESS_TOKEN ||
+      this.pageAccessToken;
+
+    if (!token && appId && appSecret) {
+      token = `${appId}|${appSecret}`;
+    }
+
+    if (!token) {
+      throw new Error('Facebook not configured. Set FACEBOOK_APP_ID and FACEBOOK_APP_SECRET or FACEBOOK_PAGE_ACCESS_TOKEN.');
+    }
+
+    // If the token is a User Access Token, attempt to resolve the Page Access Token
+    if (token && pageId && pageId !== 'me') {
+      try {
+        const pageRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${token}`);
+        if (pageRes.ok) {
+          const pageData = await pageRes.json() as any;
+          if (pageData?.access_token) {
+            token = pageData.access_token;
+          }
+        }
+      } catch {}
+    }
+
+    this.logger.log(`Publishing civic update to Facebook Graph API (Target: ${pageId})...`);
+
+    const endpoint = `https://graph.facebook.com/v19.0/${pageId}/feed`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: content,
+        access_token: token,
+      }),
+    });
+
+    const data = (await response.json()) as any;
+
+    if (!response.ok || data.error) {
+      const errMsg = data?.error?.message || response.statusText || 'Facebook Graph API error';
+      this.logger.error(`Facebook publish failed: ${errMsg}`);
+      throw new Error(`Facebook publish failed: ${errMsg}`);
+    }
+
+    const postId = data.id;
+    const publishedUrl = `https://www.facebook.com/${postId}`;
+    this.logger.log(`✅ Successfully published to Facebook: ${publishedUrl}`);
+    return { url: publishedUrl };
+  }
+}
+

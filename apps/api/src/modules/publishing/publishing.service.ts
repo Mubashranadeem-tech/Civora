@@ -15,6 +15,7 @@ import {
   TwitterAdapter,
   WordPressAdapter,
   WebhookAdapter,
+  FacebookAdapter,
 } from './publishing.adapters';
 
 @Injectable()
@@ -31,6 +32,7 @@ export class PublishingService {
       twitter: new TwitterAdapter(config),
       wordpress: new WordPressAdapter(config),
       webhook: new WebhookAdapter(config),
+      facebook: new FacebookAdapter(config),
     };
   }
 
@@ -125,8 +127,8 @@ const longContent = [
       }
 
       try {
-    const platformContent = ['wordpress', 'webhook'].includes(platform) ? longContent : shortContent;
-          const result = await adapter.publish(platformContent);
+        const platformContent = ['wordpress', 'webhook', 'facebook'].includes(platform) ? longContent : shortContent;
+        const result = await adapter.publish(platformContent);
 
         await this.db.insert(publishingResults).values({
           jobId: job.id,
