@@ -84,13 +84,14 @@ export default function AdminProblemsPage() {
       {/* Filter Bar */}
       <div className="glass-card p-3 sm:p-4 bg-white border border-[#DCE6DA]">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-3">
-          <div className="sm:col-span-2 md:col-span-2 lg:col-span-6 relative">
-            <Search className="w-4 h-4 text-[#779483] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="sm:col-span-2 md:col-span-2 lg:col-span-6 relative flex items-center">
+            <Search className="w-4 h-4 text-[#779483] absolute left-3.5 pointer-events-none z-10" />
             <input
               type="text"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="input-civora pl-10 text-xs sm:text-sm"
+              className="input-civora text-xs sm:text-sm !pl-10"
+              style={{ paddingLeft: '2.5rem' }}
               placeholder="Search by title, location, or Ticket ID..."
             />
           </div>
