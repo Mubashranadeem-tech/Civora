@@ -18,7 +18,11 @@ export const DATABASE_TOKEN = 'DATABASE';
           config.get<string>('DATABASE_URL') ||
           process.env.DATABASE_URL ||
           'postgresql://civora_user:civora_pass@localhost:5432/civora';
-        const client = postgres(url, { max: 10 });
+        const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+        const client = postgres(url, {
+          max: 10,
+          ssl: isLocal ? false : { rejectUnauthorized: false },
+        });
         return drizzle(client, { schema });
       },
       inject: [ConfigService],

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 import { DATABASE_TOKEN } from '../database/database.module';
@@ -55,8 +55,8 @@ export class PublishingService {
     const configured = this.getConfiguredPlatforms();
 
     if (configured.length === 0 && !platforms?.length) {
-      throw new Error(
-        'No publishing platforms configured. Set platform credentials in .env to enable publishing.',
+      throw new BadRequestException(
+        'No publishing platforms configured. Please set at least one platform credential (e.g. WEBHOOK_URL, WORDPRESS_URL, or FACEBOOK_PAGE_ACCESS_TOKEN) in your environment variables.',
       );
     }
 
@@ -70,7 +70,7 @@ export class PublishingService {
       .limit(1);
 
     if (!report) {
-      throw new Error('No civic report found. Run AI research first.');
+      throw new NotFoundException('No civic report found for this problem. Run AI research first.');
     }
 
 const shortContent = report.proposedPostContent || report.overview || 'Civic issue reported via Civora';

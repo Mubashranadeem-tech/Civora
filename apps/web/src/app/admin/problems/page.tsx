@@ -82,37 +82,44 @@ export default function AdminProblemsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="glass-card p-4 flex flex-wrap gap-3 bg-white border border-[#DCE6DA]">
-        <div className="flex-1 min-w-[240px] relative">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="input-civora w-full"
-            placeholder="Search by title, location, or Ticket ID..."
-          />
+      <div className="glass-card p-3 sm:p-4 bg-white border border-[#DCE6DA]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-3">
+          <div className="sm:col-span-2 md:col-span-2 lg:col-span-6 relative">
+            <Search className="w-4 h-4 text-[#779483] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="input-civora pl-10 text-xs sm:text-sm"
+              placeholder="Search by title, location, or Ticket ID..."
+            />
+          </div>
+          <div className="sm:col-span-1 md:col-span-1 lg:col-span-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="input-civora font-medium text-xs text-[#223B2B]"
+            >
+              <option value="">All Statuses</option>
+              {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-1 md:col-span-1 lg:col-span-3">
+            <select
+              value={priorityFilter}
+              onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
+              className="input-civora font-medium text-xs text-[#223B2B]"
+            >
+              <option value="">All Priorities</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="input-civora w-48 font-medium text-xs text-[#223B2B]"
-        >
-          <option value="">All Statuses</option>
-          {Object.entries(STATUS_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
-          ))}
-        </select>
-        <select
-          value={priorityFilter}
-          onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
-          className="input-civora w-40 font-medium text-xs text-[#223B2B]"
-        >
-          <option value="">All Priorities</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
       </div>
 
       {/* Content */}
@@ -131,8 +138,8 @@ export default function AdminProblemsPage() {
       ) : (
         <>
           <div className="glass-card overflow-hidden bg-white border border-[#DCE5DA] shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full min-w-[760px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-[#EAF0E8] bg-[#F7FAF6] text-[11px] font-bold uppercase tracking-wider text-[#4E6857]">
                     <th className="px-5 py-3.5">Ticket ID</th>

@@ -1,4 +1,14 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const getBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+  let clean = envUrl.trim().replace(/\/+$/, '');
+  if (!clean.endsWith('/api/v1')) {
+    clean = `${clean}/api/v1`;
+  }
+  return clean;
+};
+
+export const API_URL = getBaseUrl();
+
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;

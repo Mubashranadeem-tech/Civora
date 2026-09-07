@@ -14,7 +14,11 @@ async function runMigrations() {
   const url = process.env.DATABASE_URL || 'postgresql://civora_user:civora_pass@localhost:5432/civora';
 
   console.log('🔄 Running Civora database migrations on:', url.replace(/:[^:@]+@/, ':***@'));
-  const client = postgres(url, { max: 1 });
+  const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+  const client = postgres(url, {
+    max: 1,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+  });
   const db = drizzle(client);
 
   const migrationsFolder = path.join(__dirname, '../migrations');

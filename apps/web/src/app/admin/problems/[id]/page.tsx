@@ -238,7 +238,7 @@ export default function AdminProblemDetailPage() {
                 {problem.effectivePriority} Priority
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold text-[#13251A] tracking-tight">{problem.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#13251A] tracking-tight break-words">{problem.title}</h1>
             <div className="text-xs text-[#526B5C] mt-1 flex items-center gap-2 flex-wrap">
               <span>{problem.category?.name} › {problem.type?.name}</span>
               <span>·</span>
@@ -268,7 +268,7 @@ export default function AdminProblemDetailPage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap w-full">
         <TabButton label="Overview" icon={FileText} active={tab === 'overview'} onClick={() => setTab('overview')} />
         <TabButton label="AI Pipeline" icon={BrainCircuit} active={tab === 'ai'} onClick={() => setTab('ai')} />
         <TabButton label="Civic Report" icon={Newspaper} active={tab === 'report'} onClick={() => setTab('report')} />
@@ -675,36 +675,72 @@ export default function AdminProblemDetailPage() {
             )}
 
             {/* Publishing Controls */}
+            {publishingStatus && publishingStatus.configured?.length === 0 && (
+              <div className="p-3.5 mb-4 rounded-xl bg-[#FFF9E6] border border-[#FDE68A] flex items-start gap-2.5 text-xs text-[#92400E]">
+                <AlertCircle className="w-4 h-4 text-[#D97706] shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold mb-0.5">No Social Platforms Configured Yet</div>
+                  <div>To broadcast reports to external channels, add credentials (like <code className="bg-white/60 px-1 py-0.5 rounded text-[11px] font-mono">WEBHOOK_URL</code> or <code className="bg-white/60 px-1 py-0.5 rounded text-[11px] font-mono">FACEBOOK_PAGE_ACCESS_TOKEN</code>) to your Render backend environment variables. You can still approve problems without broadcasting.</div>
+                </div>
+              </div>
+            )}
+
             {['approved', 'published'].includes(problem.status) ? (
               <ActionButton
                 label={problem.status === 'published' ? 'Re-publish Updates' : 'Publish to Connected Platforms'}
                 icon={Globe}
                 onClick={() => handleAction('publish')}
                 loading={actionLoading === 'publish'}
+                disabled={!publishingStatus || publishingStatus.configured?.length === 0}
               />
             ) : problem.status === 'awaiting_approval' ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-[#EAF4E9] border border-[#CCE2CA]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#EAF4E9] border border-[#CCE2CA]">
                 <div className="flex-1 text-xs text-[#1E5231] font-semibold">
-                  Civic report is approved and ready. Publish directly to connected platforms.
+                  Civic report is approved and ready. Approve problem or publish directly to platforms.
                 </div>
-                <ActionButton
-                  label="Approve & Publish"
-                  icon={CheckCircle2}
-                  onClick={async () => {
-                    setActionLoading('approve-publish');
-                    try {
-                      await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
-                      await api.publishProblem(id);
-                      setStatusMsg('Approved and published successfully!');
-                      await fetch();
-                    } catch (err: any) {
-                      setStatusMsg(`Error: ${err.message}`);
-                    } finally {
-                      setActionLoading(null);
-                    }
-                  }}
-                  loading={actionLoading === 'approve-publish'}
-                />
+                <div className="flex items-center gap-2">
+                  <ActionButton
+                    label="Approve Only"
+                    icon={Check}
+                    variant="secondary"
+                    onClick={async () => {
+                      setActionLoading('approve-only');
+                      try {
+                        await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
+                        setStatusMsg('Problem marked as Approved successfully!');
+                        await fetch();
+                      } catch (err: any) {
+                        setStatusMsg(`Error: ${err.message}`);
+                      } finally {
+                        setActionLoading(null);
+                      }
+                    }}
+                    loading={actionLoading === 'approve-only'}
+                  />
+                  <ActionButton
+                    label="Approve & Publish"
+                    icon={CheckCircle2}
+                    onClick={async () => {
+                      setActionLoading('approve-publish');
+                      try {
+                        await api.reviewProblem(id, { action: 'approve', notes: reviewNotes });
+                        if (!publishingStatus || publishingStatus.configured?.length === 0) {
+                          setStatusMsg('Problem approved! (Publish skipped because no platforms are configured in backend environment variables).');
+                          await fetch();
+                          return;
+                        }
+                        await api.publishProblem(id);
+                        setStatusMsg('Approved and published successfully!');
+                        await fetch();
+                      } catch (err: any) {
+                        setStatusMsg(`Error: ${err.message}`);
+                      } finally {
+                        setActionLoading(null);
+                      }
+                    }}
+                    loading={actionLoading === 'approve-publish'}
+                  />
+                </div>
               </div>
             ) : problem.civicReport ? (
               <div className="flex items-center justify-between p-4 rounded-xl bg-[#FFF8EB] border border-[#FBE0B8]">

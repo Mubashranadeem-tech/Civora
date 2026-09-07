@@ -165,8 +165,11 @@ const CATEGORIES_SEED = [
 
 async function seed() {
   const url = process.env.DATABASE_URL || 'postgresql://civora_user:civora_pass@localhost:5432/civora';
-
-  const client = postgres(url, { max: 1 });
+  const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+  const client = postgres(url, {
+    max: 1,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+  });
   const db = drizzle(client, { schema: { users, problemCategories, problemTypes } });
 
   console.log('🌱 Seeding Civora database...');

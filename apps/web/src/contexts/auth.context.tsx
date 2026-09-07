@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { API_URL } from '@/lib/api';
 
 interface User {
   id: string;
@@ -30,8 +31,6 @@ interface RegisterData {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

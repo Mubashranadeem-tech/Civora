@@ -132,17 +132,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="lg:hidden bg-white border-b border-[#E0E8DF] px-4 py-3 flex items-center justify-between">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 w-full overflow-x-hidden">
+        <header className="lg:hidden bg-white border-b border-[#E0E8DF] px-4 py-3 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#F0F5EF]">
+            <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#F0F5EF]" aria-label="Open menu">
               <Menu className="w-5 h-5 text-[#14261C]" />
             </button>
             <span className="font-bold text-[#14261C]">Civora</span>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6 md:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-8 min-w-0 w-full max-w-full">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -27,7 +27,8 @@ export default function AdminUsersPage() {
         </div>
       ) : (
         <div className="glass-card overflow-hidden bg-white border border-[#DCE5DA] shadow-xs">
-          <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[650px] text-left border-collapse">
             <thead>
               <tr className="border-b border-[#EAF0E8] bg-[#F7FAF6] text-[11px] font-bold uppercase tracking-wider text-[#4E6857]">
                 <th className="px-5 py-3.5">User / Submitter</th>
@@ -60,6 +61,7 @@ export default function AdminUsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
