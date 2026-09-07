@@ -10,6 +10,7 @@ import {
   Max,
   IsLatitude,
   IsLongitude,
+  Matches,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -37,6 +38,7 @@ export class CreateProblemDto {
   @IsString()
   @MinLength(2)
   @MaxLength(100)
+  @Matches(/^[^0-9]+$/, { message: 'City name must contain only letters and cannot contain numbers' })
   city: string;
 
   @IsString()
@@ -52,6 +54,7 @@ export class CreateProblemDto {
   @IsString()
   @IsOptional()
   @MaxLength(30)
+  @Matches(/^$|^(\d{5}-\d{7}-\d{1}|\d{13})$/, { message: 'CNIC must contain numbers only in 13-digit format (e.g. 61101-1234567-1)' })
   cnic?: string;
 
   @IsString()

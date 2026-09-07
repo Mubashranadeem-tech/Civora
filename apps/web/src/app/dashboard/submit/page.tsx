@@ -210,12 +210,16 @@ export default function SubmitProblemPage() {
     );
   }
 
+  const isCityValid = /^[a-zA-Z\s.-]{2,50}$/.test(form.city.trim());
+  const cnicDigits = (form.cnic || '').replace(/\D/g, '');
+  const isCnicValid = cnicDigits.length === 0 || cnicDigits.length === 13;
+
   const canProceed = [
     () => !!form.categoryId,
     () => !!form.typeId,
     () => form.title.trim().length >= 5,
     () => true,
-    () => form.city.trim().length >= 2,
+    () => isCityValid && isCnicValid,
     () => true,
   ][step]?.();
 
@@ -397,11 +401,20 @@ export default function SubmitProblemPage() {
                 <input
                   type="text"
                   value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  className="input-civora"
+                  onChange={(e) => {
+                    // Strictly strip any numeric digits
+                    const lettersOnly = e.target.value.replace(/[0-9]/g, '');
+                    setForm({ ...form, city: lettersOnly });
+                  }}
+                  className={`input-civora ${form.city && !isCityValid ? '!border-red-400 focus:!border-red-500' : ''}`}
                   placeholder="Islamabad, Rawalpindi, Lahore..."
                   required
                 />
+                {form.city && !isCityValid && (
+                  <p className="text-[11px] text-red-600 mt-1 font-medium">
+                    City must contain letters only (no numbers allowed).
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
@@ -436,12 +449,32 @@ export default function SubmitProblemPage() {
               </label>
               <input
                 type="text"
+                inputMode="numeric"
                 value={form.cnic}
-                onChange={(e) => setForm({ ...form, cnic: e.target.value })}
-                className="input-civora font-mono"
+                onChange={(e) => {
+                  // Only allow digits up to 13
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 13);
+                  let formatted = digits;
+                  if (digits.length > 5 && digits.length <= 12) {
+                    formatted = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+                  } else if (digits.length > 12) {
+                    formatted = `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12, 13)}`;
+                  }
+                  setForm({ ...form, cnic: formatted });
+                }}
+                className={`input-civora font-mono ${cnicDigits.length > 0 && cnicDigits.length < 13 ? '!border-amber-400 focus:!border-amber-500' : ''}`}
                 placeholder="61101-1234567-1"
                 maxLength={15}
               />
+              {cnicDigits.length > 0 && cnicDigits.length < 13 ? (
+                <p className="text-[11px] text-amber-600 mt-1 font-medium">
+                  CNIC must be a 13-digit number. ({13 - cnicDigits.length} more digit{13 - cnicDigits.length === 1 ? '' : 's'} needed)
+                </p>
+              ) : (
+                <p className="text-[11px] text-[#637C6D] mt-1">
+                  Numbers only (e.g. 61101-1234567-1). Letters are automatically blocked.
+                </p>
+              )}
             </div>
           </div>
         )}
