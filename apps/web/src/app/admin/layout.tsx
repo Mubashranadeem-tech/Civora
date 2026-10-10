@@ -60,9 +60,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#F8FAF8] text-[#14261C] flex">
       {/* Admin Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-[#E0E8DF] flex flex-col transition-all duration-300 ease-in-out relative ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E0E8DF] flex flex-col transition-all duration-300 ease-in-out lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 shadow-xs ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static lg:z-auto shadow-xs ${
+        } ${
           collapsed ? 'lg:w-20' : 'lg:w-64'
         }`}
       >
