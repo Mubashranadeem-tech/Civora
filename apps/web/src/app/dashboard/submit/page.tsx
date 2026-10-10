@@ -1,73 +1,120 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { 
-  Building2, 
-  Zap, 
-  TreePine, 
-  GraduationCap, 
-  Hospital, 
-  Car, 
-  ShieldAlert, 
-  Landmark, 
-  FileText, 
-  UploadCloud, 
-  Check, 
-  ArrowRight,
-  CheckCircle2,
-  Paperclip,
-  Trash2
+import {
+  Building2, Zap, TreePine, GraduationCap, Hospital, Car, ShieldAlert, Landmark,
+  FileText, UploadCloud, Check, ArrowRight, ArrowLeft, CheckCircle2, Paperclip,
+  MapPin, CreditCard, AlertTriangle, ChevronRight, X, Shield, Send, Activity,
 } from 'lucide-react';
 
-const STEPS = ['Category', 'Problem Type', 'Description', 'Evidence', 'Location & ID', 'Review'];
+const STEPS = [
+  { label: 'Category', desc: 'Choose civic domain' },
+  { label: 'Sub-Type', desc: 'Specify problem type' },
+  { label: 'Describe', desc: 'Detail the issue' },
+  { label: 'Evidence', desc: 'Upload proof' },
+  { label: 'Location', desc: 'Pinpoint area' },
+  { label: 'Review', desc: 'Confirm & submit' },
+];
 
-function StepIndicator({ current, total }: { current: number; total: number }) {
+const CATEGORY_META: Record<string, { icon: any; color: string; bg: string; glow: string }> = {
+  infrastructure:       { icon: Building2,   color: '#1C4830', bg: 'linear-gradient(135deg,#EAF5E9,#D6EDD4)', glow: 'rgba(28,72,48,0.18)'   },
+  utilities:            { icon: Zap,          color: '#7A4A00', bg: 'linear-gradient(135deg,#FFF8E6,#FDEDC7)', glow: 'rgba(200,130,0,0.18)'  },
+  sanitation:           { icon: TreePine,     color: '#165E3A', bg: 'linear-gradient(135deg,#E9F7EE,#D1EEDD)', glow: 'rgba(22,94,58,0.18)'   },
+  education:            { icon: GraduationCap,color: '#2A3F8F', bg: 'linear-gradient(135deg,#EEF2FF,#DBEAFE)', glow: 'rgba(42,63,143,0.18)'  },
+  healthcare:           { icon: Hospital,     color: '#8B1A1A', bg: 'linear-gradient(135deg,#FFF1F1,#FFE0E0)', glow: 'rgba(139,26,26,0.18)'  },
+  transportation:       { icon: Car,          color: '#3D2C8A', bg: 'linear-gradient(135deg,#F3F0FF,#E5DBFF)', glow: 'rgba(61,44,138,0.18)'  },
+  'public-safety':      { icon: ShieldAlert,  color: '#8A3500', bg: 'linear-gradient(135deg,#FFF4EE,#FFE4D1)', glow: 'rgba(138,53,0,0.18)'   },
+  'community-services': { icon: Landmark,     color: '#005F5F', bg: 'linear-gradient(135deg,#E6F7F7,#CCEEEE)', glow: 'rgba(0,95,95,0.18)'    },
+};
+
+function getCategoryMeta(slug: string) {
+  return CATEGORY_META[slug] || { icon: FileText, color: '#3D4F45', bg: 'linear-gradient(135deg,#F3F6F2,#E6EBE4)', glow: 'rgba(61,79,69,0.12)' };
+}
+
+const PRIORITIES = [
+  { value: 'low',      label: 'Low',      color: '#1E6E3B', bg: '#EAF6EE', border: '#CDECD6' },
+  { value: 'medium',   label: 'Medium',   color: '#A86518', bg: '#FEF6E8', border: '#FCE5BE' },
+  { value: 'high',     label: 'High',     color: '#C25008', bg: '#FFF1E6', border: '#FCD7BE' },
+  { value: 'critical', label: 'Critical', color: '#C52222', bg: '#FDE8E8', border: '#F8B4B4' },
+];
+
+/* ── Step Indicator ──────────────────────────────────────────────────────── */
+function StepIndicator({ current }: { current: number }) {
   return (
-    <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-      {STEPS.map((step, i) => (
-        <div key={i} className="flex items-center gap-2 flex-shrink-0">
-          <div
-            className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold transition-all ${
-              i < current
-                ? 'bg-[#EAF5E9] text-[#1E5433] border border-[#CDE4CB] shadow-xs'
-                : i === current
-                ? 'bg-[#1C4830] text-white border border-[#163C27] shadow-xs'
-                : 'bg-[#F2F6F1] text-[#7A9384] border border-[#DEE7DD]'
-            }`}
-          >
-            {i < current ? <Check className="w-3.5 h-3.5" /> : i + 1}
-          </div>
-          <span className={`text-xs font-bold ${i === current ? 'text-[#14261C]' : 'text-[#688273]'}`}>
-            {step}
-          </span>
-          {i < STEPS.length - 1 && (
-            <div className={`w-4 h-0.5 ${i < current ? 'bg-[#2D6C48]' : 'bg-[#DEE7DD]'}`} />
-          )}
-        </div>
-      ))}
+    <div style={{ position: 'relative', marginBottom: 40 }}>
+      <div style={{ position: 'absolute', top: 18, left: '4%', right: '4%', height: 2, background: '#E2EBE0', borderRadius: 2 }} />
+      <div style={{ position: 'absolute', top: 18, left: '4%', width: `${(current / (STEPS.length - 1)) * 92}%`, height: 2, background: 'linear-gradient(90deg,#1C4830,#2A6443)', borderRadius: 2, transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)' }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
+        {STEPS.map((s, i) => {
+          const done = i < current;
+          const active = i === current;
+          return (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, fontWeight: 700, transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+                background: done || active ? 'linear-gradient(135deg,#1C4830,#2A6443)' : '#FFFFFF',
+                color: done || active ? '#FFF' : '#8C9F92',
+                border: active || done ? '2px solid #1C4830' : '2px solid #D6E2D5',
+                boxShadow: active ? '0 0 0 4px rgba(28,72,48,0.12),0 4px 12px rgba(28,72,48,0.2)' : done ? '0 2px 6px rgba(28,72,48,0.15)' : '0 1px 3px rgba(0,0,0,0.04)',
+                transform: active ? 'scale(1.12)' : 'scale(1)',
+              }}>
+                {done ? <Check style={{ width: 14, height: 14 }} /> : i + 1}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? '#1C4830' : done ? '#2A6443' : '#8C9F92', lineHeight: 1.2, transition: 'color 0.3s', textAlign: 'center' }}
+                className="hidden sm:block">{s.label}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function getCategoryIcon(slug: string) {
-  switch (slug) {
-    case 'infrastructure': return Building2;
-    case 'utilities': return Zap;
-    case 'sanitation': return TreePine;
-    case 'education': return GraduationCap;
-    case 'healthcare': return Hospital;
-    case 'transportation': return Car;
-    case 'public-safety': return ShieldAlert;
-    case 'community-services': return Landmark;
-    default: return FileText;
-  }
+/* ── Success Screen ───────────────────────────────────────────────────────── */
+function SuccessScreen({ civId, onTrack, onMyProblems }: { civId: string; onTrack: () => void; onMyProblems: () => void }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setShow(true), 80); return () => clearTimeout(t); }, []);
+  return (
+    <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center', padding: '32px 0', opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.6s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div style={{ position: 'relative', display: 'inline-block', marginBottom: 28 }}>
+        <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'linear-gradient(135deg,#1C4830,#2A6443)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', boxShadow: '0 0 0 12px rgba(28,72,48,0.08),0 0 0 24px rgba(28,72,48,0.04)' }}>
+          <CheckCircle2 style={{ width: 44, height: 44, color: '#fff' }} />
+        </div>
+        <div style={{ position: 'absolute', top: -6, right: -6, width: 28, height: 28, borderRadius: '50%', background: '#EAF5EC', border: '2px solid #CCE5D0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Check style={{ width: 13, height: 13, color: '#1C4830' }} />
+        </div>
+      </div>
+      <h1 style={{ fontSize: 26, fontWeight: 800, color: '#132219', marginBottom: 8, letterSpacing: '-0.5px' }}>Report Submitted!</h1>
+      <p style={{ fontSize: 13, color: '#58695F', marginBottom: 28, lineHeight: 1.6 }}>
+        Your complaint is now in the AI verification pipeline and will be escalated to the relevant authority.
+      </p>
+      <div style={{ background: 'linear-gradient(135deg,#EBF5EA,#DDF0DB)', border: '1px solid #CDECD6', borderRadius: 16, padding: '20px 24px', marginBottom: 28, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '40%', background: 'radial-gradient(circle at 100% 50%,rgba(28,72,48,0.06),transparent)', pointerEvents: 'none' }} />
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#557161', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6 }}>Your Tracking ID</div>
+        <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 800, color: '#1C4830', letterSpacing: 2 }}>{civId}</div>
+        <div style={{ fontSize: 11, color: '#6B8572', marginTop: 6 }}>Save this ID to monitor resolution progress</div>
+      </div>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button onClick={onTrack} className="btn-primary" style={{ fontSize: 13, padding: '12px 28px', borderRadius: 14 }}>
+          <ArrowRight className="w-4 h-4" /> Track Live Status
+        </button>
+        <button onClick={onMyProblems} className="btn-secondary" style={{ fontSize: 13, padding: '12px 28px', borderRadius: 14 }}>
+          View My Reports
+        </button>
+      </div>
+    </div>
+  );
 }
 
+/* ── Main Page ────────────────────────────────────────────────────────────── */
 export default function SubmitProblemPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [animDir, setAnimDir] = useState<'fwd' | 'bwd'>('fwd');
+  const [visible, setVisible] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [types, setTypes] = useState<any[]>([]);
   const [files, setFiles] = useState<File[]>([]);
@@ -76,144 +123,72 @@ export default function SubmitProblemPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ civId: string } | null>(null);
   const [error, setError] = useState('');
-
   const [declared, setDeclared] = useState(false);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
-    categoryId: '',
-    typeId: '',
-    title: '',
-    description: '',
-    city: '',
-    area: '',
-    address: '',
-    cnic: '',
-    userPriority: 'medium',
+    categoryId: '', typeId: '', title: '', description: '',
+    city: '', area: '', address: '', cnic: '', userPriority: 'medium',
   });
-
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedType, setSelectedType] = useState<any>(null);
 
+  useEffect(() => { api.getCategories().then((d: any) => setCategories(Array.isArray(d) ? d : [])); }, []);
   useEffect(() => {
-    api.getCategories().then((data: any) => setCategories(Array.isArray(data) ? data : []));
-  }, []);
-
-  useEffect(() => {
-    if (form.categoryId) {
-      api.getCategoryTypes(form.categoryId).then((data: any) => setTypes(Array.isArray(data) ? data : []));
-    }
+    if (form.categoryId) api.getCategoryTypes(form.categoryId).then((d: any) => setTypes(Array.isArray(d) ? d : []));
   }, [form.categoryId]);
 
+  const goStep = (next: number) => {
+    setAnimDir(next > step ? 'fwd' : 'bwd');
+    setVisible(false);
+    setTimeout(() => { setStep(next); setError(''); setVisible(true); }, 220);
+  };
+
   const addFiles = useCallback((newFiles: FileList | File[]) => {
-    const validFiles: File[] = [];
-    const maxSize = 10 * 1024 * 1024;
-    Array.from(newFiles).forEach((file) => {
-      if (file.size > maxSize) {
-        setError(`File "${file.name}" exceeds 10MB limit`);
-        return;
-      }
-      validFiles.push(file);
+    const valid: File[] = [];
+    Array.from(newFiles).forEach((f) => {
+      if (f.size > 10 * 1024 * 1024) { setError(`"${f.name}" exceeds 10MB`); return; }
+      valid.push(f);
     });
-
-    const combined = [...files, ...validFiles].slice(0, 10);
+    const combined = [...files, ...valid].slice(0, 10);
     setFiles(combined);
-
     combined.forEach((file, i) => {
       if (!previews[i] && file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          setPreviews((prev) => {
-            const updated = [...prev];
-            updated[i] = e.target?.result as string;
-            return updated;
-          });
-        };
+        reader.onload = (e) => setPreviews((prev) => { const u = [...prev]; u[i] = e.target?.result as string; return u; });
         reader.readAsDataURL(file);
       }
     });
   }, [files, previews]);
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-    setPreviews(previews.filter((_, i) => i !== index));
+  const removeFile = (i: number) => {
+    setFiles(files.filter((_, idx) => idx !== i));
+    setPreviews(previews.filter((_, idx) => idx !== i));
   };
 
   const handleSubmit = async () => {
-    if (!form.categoryId || !form.typeId || !form.title || !form.city) {
-      setError('Please complete all required fields');
-      return;
-    }
-    if (!declared) {
-      setError('Please confirm the declaration checkbox before submitting');
-      return;
-    }
-
-    setSubmitting(true);
-    setError('');
-
+    if (!form.categoryId || !form.typeId || !form.title || !form.city) { setError('Please complete all required fields.'); return; }
+    if (!declared) { setError('Please confirm the declaration before submitting.'); return; }
+    setSubmitting(true); setError('');
     try {
-      const formData = new FormData();
-      formData.append('categoryId', form.categoryId);
-      formData.append('typeId', form.typeId);
-      formData.append('title', form.title);
-      if (form.description) formData.append('description', form.description);
-      formData.append('userPriority', form.userPriority);
-      formData.append('city', form.city);
-      if (form.area) formData.append('area', form.area);
-      if (form.address) formData.append('address', form.address);
-      if (form.cnic) formData.append('cnic', form.cnic);
-      files.forEach((file) => formData.append('files', file));
-
-      const result = await api.createProblem(formData) as any;
+      const fd = new FormData();
+      fd.append('categoryId', form.categoryId); fd.append('typeId', form.typeId);
+      fd.append('title', form.title);
+      if (form.description) fd.append('description', form.description);
+      fd.append('userPriority', form.userPriority); fd.append('city', form.city);
+      if (form.area) fd.append('area', form.area);
+      if (form.address) fd.append('address', form.address);
+      if (form.cnic) fd.append('cnic', form.cnic);
+      files.forEach((f) => fd.append('files', f));
+      const result = await api.createProblem(fd) as any;
       setSubmitted({ civId: result.civId });
     } catch (err: any) {
       setError(err.message || 'Submission failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
-
-  if (submitted) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-12">
-        <div className="glass-card p-12 bg-white border border-[#CADDC7] shadow-md">
-          <div className="w-16 h-16 rounded-2xl bg-[#EAF5EA] text-[#1E5433] flex items-center justify-center mx-auto mb-4 border border-[#CCE2CA]">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-[#132419] mb-2">Problem Reported Successfully</h1>
-          <p className="text-[#516B5C] text-xs mb-6">
-            Your civic complaint has been registered into the AI verification pipeline.
-          </p>
-          <div className="inline-block px-6 py-4 rounded-2xl bg-[#F0F7EE] border border-[#CEE2CC] mb-6">
-            <div className="text-[11px] font-bold text-[#557161] uppercase tracking-wider mb-1">Your Tracking ID</div>
-            <div className="text-2xl font-mono font-extrabold text-[#194D2F]">{submitted.civId}</div>
-          </div>
-          <p className="text-xs text-[#637C6D] mb-8 max-w-md mx-auto">
-            Please save this Ticket ID to track the real-time AI analysis and municipal escalation status.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => router.push(`/dashboard/track?id=${submitted.civId}`)}
-              className="btn-primary text-xs px-6 py-3 rounded-xl shadow-xs"
-            >
-              Track Live Status
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/my-problems')}
-              className="btn-secondary text-xs px-6 py-3 rounded-xl"
-            >
-              View My Reports
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const isCityValid = /^[a-zA-Z\s.-]{2,50}$/.test(form.city.trim());
   const cnicDigits = (form.cnic || '').replace(/\D/g, '');
   const isCnicValid = cnicDigits.length === 0 || cnicDigits.length === 13;
-
   const canProceed = [
     () => !!form.categoryId,
     () => !!form.typeId,
@@ -223,330 +198,340 @@ export default function SubmitProblemPage() {
     () => true,
   ][step]?.();
 
+  if (submitted) {
+    return (
+      <SuccessScreen
+        civId={submitted.civId}
+        onTrack={() => router.push(`/dashboard/track?id=${submitted.civId}`)}
+        onMyProblems={() => router.push('/dashboard/my-problems')}
+      />
+    );
+  }
+
+  const slide: React.CSSProperties = {
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'translateX(0)' : animDir === 'fwd' ? 'translateX(-26px)' : 'translateX(26px)',
+    transition: 'opacity 0.22s ease,transform 0.22s ease',
+  };
+
+  const STEP_TITLES = ['Select Civic Domain', 'Select Specific Sub-Type', 'Describe the Issue', 'Upload Evidence', 'Location & Identity', 'Review & Submit'];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="pb-2 border-b border-[#E2EBE0]">
-        <h1 className="text-2xl font-extrabold text-[#13251A] tracking-tight">Report a Community Problem</h1>
-        <p className="text-sm text-[#546E5E]">Provide problem details for autonomous verification and escalation.</p>
+    <div style={{ maxWidth: 740, margin: '0 auto' }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .cat-card:hover:not(.active) { transform: translateY(-2px) scale(1.01) !important; box-shadow: 0 8px 24px rgba(28,72,48,0.10) !important; border-color: #ADC5AF !important; }
+        .type-btn:hover:not(.active)  { transform: translateY(-1px) !important; box-shadow: 0 4px 12px rgba(28,72,48,0.08) !important; }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg,#1C4830,#2A6443)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(28,72,48,0.22)', flexShrink: 0 }}>
+            <FileText style={{ width: 17, height: 17, color: '#fff' }} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: 21, fontWeight: 800, color: '#132219', letterSpacing: '-0.4px', lineHeight: 1 }}>Report a Community Problem</h1>
+            <p style={{ fontSize: 12, color: '#58695F', marginTop: 3 }}>Powered by AI verification &amp; municipal escalation</p>
+          </div>
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: '#EAF5EC', border: '1px solid #CCE5D0', fontSize: 11, fontWeight: 600, color: '#1C4830' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#1C4830' }} />
+          Autonomous Triage &amp; Verification Active
+        </div>
       </div>
 
-      <StepIndicator current={step} total={STEPS.length} />
+      <StepIndicator current={step} />
 
-      <div className="glass-card p-6 md:p-8 bg-white border border-[#DCE5DA] shadow-xs min-h-64">
-        {/* Step 0: Category */}
-        {step === 0 && (
-          <div>
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Select Civic Domain</h2>
-            <p className="text-xs text-[#5C7566] mb-4">Choose the category that best classifies the observed issue.</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {categories.map((cat) => {
-                const Icon = getCategoryIcon(cat.slug);
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setForm({ ...form, categoryId: cat.id, typeId: '' });
-                      setSelectedCategory(cat);
-                      setSelectedType(null);
-                    }}
-                    className={`p-4 rounded-xl text-left transition-all border ${
-                      form.categoryId === cat.id
-                        ? 'border-[#2D6C48] bg-[#EBF5EA] text-[#1B4D2E] shadow-xs'
-                        : 'border-[#DEE6DD] bg-[#FAFDF9] hover:border-[#ADC5AF] text-[#16271D]'
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-white border border-[#D5E4D3] flex items-center justify-center text-[#245D3B] mb-3 shadow-xs">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="text-xs font-bold">{cat.name}</div>
-                    <div className="text-[11px] text-[#5E7868] mt-1 line-clamp-2">{cat.description}</div>
-                  </button>
-                );
-              })}
+      {/* Card */}
+      <div style={{ background: '#FFFFFF', border: '1px solid #E1ECE2', borderRadius: 24, boxShadow: '0 4px 32px -4px rgba(20,48,30,0.07),0 1px 4px rgba(0,0,0,0.02)', overflow: 'hidden', minHeight: 360 }}>
+        {/* Progress stripe */}
+        <div style={{ height: 4, background: `linear-gradient(90deg,#1C4830 0%,#2A6443 ${((step+1)/STEPS.length)*100}%,#E2EBE0 ${((step+1)/STEPS.length)*100}%,#E2EBE0 100%)`, transition: 'background 0.5s ease' }} />
+
+        <div style={{ padding: '28px 32px 24px' }}>
+          {/* Step label */}
+          <div style={{ marginBottom: 22, ...slide }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#2A6443', textTransform: 'uppercase' as any, letterSpacing: 1.5, background: '#EAF5E9', border: '1px solid #CDECD6', padding: '2px 9px', borderRadius: 20 }}>
+                Step {step + 1} of {STEPS.length}
+              </span>
+              <span style={{ fontSize: 10, color: '#8C9F92' }}>— {STEPS[step].desc}</span>
             </div>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: '#132219', letterSpacing: '-0.3px' }}>{STEP_TITLES[step]}</h2>
           </div>
-        )}
 
-        {/* Step 1: Problem Type */}
-        {step === 1 && (
-          <div>
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Select Specific Sub-Type</h2>
-            <p className="text-xs text-[#5C7566] mb-4">
-              Selected Domain: <strong className="text-[#205433]">{selectedCategory?.name}</strong>
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {types.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => {
-                    setForm({ ...form, typeId: type.id });
-                    setSelectedType(type);
-                  }}
-                  className={`p-3.5 rounded-xl text-left text-xs font-bold transition-all border ${
-                    form.typeId === type.id
-                      ? 'border-[#2D6C48] bg-[#EBF5EA] text-[#1B4D2E] shadow-xs'
-                      : 'border-[#DEE6DD] bg-[#FAFDF9] hover:border-[#ADC5AF] text-[#16271D]'
-                  }`}
-                >
-                  {type.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Description */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Describe the Issue</h2>
-            <div>
-              <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                Problem Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="input-civora font-semibold"
-                placeholder="E.g., Severe water leakage flooding 42nd Street near municipal park"
-                maxLength={255}
-              />
-              <div className="text-[11px] text-[#718B7C] mt-1">{form.title.length}/255 characters</div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                Detailed Context & Observations
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="input-civora resize-none text-xs leading-relaxed"
-                rows={5}
-                placeholder="Include details: How long has this issue existed? Who is impacted? Any previous complaints filed?"
-                maxLength={5000}
-              />
-              <div className="text-[11px] text-[#718B7C] mt-1">{form.description.length}/5000 characters</div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Evidence */}
-        {step === 3 && (
-          <div>
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Upload Photo & Document Evidence</h2>
-            <p className="text-xs text-[#5C7566] mb-4">
-              Clear photos increase AI verification confidence and expedite admin triage.
-            </p>
-
-            {/* Drop Zone */}
-            <div
-              className={`drop-zone mb-4 ${dragOver ? 'drag-over' : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
-              onClick={() => document.getElementById('file-input')?.click()}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-[#EAF4E8] text-[#245D3B] flex items-center justify-center mx-auto mb-2 border border-[#CCE2CA]">
-                <UploadCloud className="w-6 h-6" />
-              </div>
-              <p className="text-xs font-bold text-[#172D20]">Drag & drop files here or click to browse</p>
-              <p className="text-[11px] text-[#637C6D] mt-1">Images (JPG, PNG, WebP) & Documents (PDF) up to 10MB</p>
-              <input
-                id="file-input"
-                type="file"
-                multiple
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={(e) => e.target.files && addFiles(e.target.files)}
-              />
-            </div>
-
-            {/* File List */}
-            {files.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-[#4B6655] mb-2">{files.length} file(s) attached</div>
-                {files.map((file, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-[#F6FAF5] border border-[#DEE7DC]">
-                    {previews[i] ? (
-                      <img src={previews[i]} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-white border border-[#D5E3D3] flex items-center justify-center text-[#4B6655]">
-                        <Paperclip className="w-4 h-4" />
+          {/* STEP 0 — Category */}
+          {step === 0 && (
+            <div style={slide}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(175px,1fr))', gap: 12 }}>
+                {categories.map((cat) => {
+                  const meta = getCategoryMeta(cat.slug);
+                  const Icon = meta.icon;
+                  const active = form.categoryId === cat.id;
+                  return (
+                    <button key={cat.id}
+                      className={`cat-card${active ? ' active' : ''}`}
+                      onClick={() => { setForm({ ...form, categoryId: cat.id, typeId: '' }); setSelectedCategory(cat); setSelectedType(null); }}
+                      style={{ padding: '17px 15px', borderRadius: 16, textAlign: 'left', border: active ? `2px solid ${meta.color}` : '1.5px solid #E1ECE2', background: active ? meta.bg : '#FAFDF9', cursor: 'pointer', transition: 'all 0.22s cubic-bezier(0.16,1,0.3,1)', boxShadow: active ? `0 0 0 3px ${meta.glow},0 6px 20px ${meta.glow}` : '0 1px 3px rgba(0,0,0,0.03)', transform: active ? 'translateY(-2px) scale(1.01)' : 'none', position: 'relative', overflow: 'hidden' }}>
+                      {active && (
+                        <div style={{ position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: '50%', background: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Check style={{ width: 10, height: 10, color: '#fff' }} />
+                        </div>
+                      )}
+                      <div style={{ width: 42, height: 42, borderRadius: 11, background: active ? '#fff' : '#F0F5EF', border: `1.5px solid ${active ? meta.color + '40' : '#E1ECE2'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, transition: 'all 0.2s', boxShadow: active ? `0 4px 12px ${meta.glow}` : 'none' }}>
+                        <Icon style={{ width: 19, height: 19, color: active ? meta.color : '#6B8572' }} />
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-[#14261C] truncate">{file.name}</div>
-                      <div className="text-[11px] text-[#698374]">{(file.size / 1024).toFixed(1)} KB</div>
-                    </div>
-                    <button onClick={() => removeFile(i)} className="text-[#88A292] hover:text-[#C52222] transition-colors p-1">
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <div style={{ fontSize: 12, fontWeight: 700, color: active ? meta.color : '#17261D', marginBottom: 3, lineHeight: 1.2 }}>{cat.name}</div>
+                      <div style={{ fontSize: 10, color: active ? meta.color + 'CC' : '#7A9384', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{cat.description}</div>
                     </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 1 — Sub-Type */}
+          {step === 1 && (
+            <div style={slide}>
+              {selectedCategory && (() => {
+                const m = getCategoryMeta(selectedCategory.slug);
+                const Icon = m.icon;
+                return (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 13px', borderRadius: 20, background: m.bg, border: `1px solid ${m.color}30`, marginBottom: 18 }}>
+                    <Icon style={{ width: 13, height: 13, color: m.color }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: m.color }}>{selectedCategory.name}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 4: Location */}
-        {step === 4 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Location & Citizen Verification</h2>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                  City <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.city}
-                  onChange={(e) => {
-                    // Strictly strip any numeric digits
-                    const lettersOnly = e.target.value.replace(/[0-9]/g, '');
-                    setForm({ ...form, city: lettersOnly });
-                  }}
-                  className={`input-civora ${form.city && !isCityValid ? '!border-red-400 focus:!border-red-500' : ''}`}
-                  placeholder="Islamabad, Rawalpindi, Lahore..."
-                  required
-                />
-                {form.city && !isCityValid && (
-                  <p className="text-[11px] text-red-600 mt-1 font-medium">
-                    City must contain letters only (no numbers allowed).
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                  Area / Sector / Neighborhood
-                </label>
-                <input
-                  type="text"
-                  value={form.area}
-                  onChange={(e) => setForm({ ...form, area: e.target.value })}
-                  className="input-civora"
-                  placeholder="Sector F-8, Gulberg, Defence..."
-                />
+                );
+              })()}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 10 }}>
+                {types.map((type) => {
+                  const active = form.typeId === type.id;
+                  return (
+                    <button key={type.id}
+                      className={`type-btn${active ? ' active' : ''}`}
+                      onClick={() => { setForm({ ...form, typeId: type.id }); setSelectedType(type); }}
+                      style={{ padding: '13px 15px', borderRadius: 13, textAlign: 'left', border: active ? '2px solid #1C4830' : '1.5px solid #E1ECE2', background: active ? 'linear-gradient(135deg,#EAF5E9,#D6EDD4)' : '#FAFDF9', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)', boxShadow: active ? '0 0 0 3px rgba(28,72,48,0.10),0 4px 14px rgba(28,72,48,0.12)' : '0 1px 3px rgba(0,0,0,0.03)', transform: active ? 'translateY(-1px)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: active ? '#1C4830' : '#17261D', flex: 1 }}>{type.name}</span>
+                      {active
+                        ? <Check style={{ width: 13, height: 13, color: '#1C4830', flexShrink: 0 }} />
+                        : <ChevronRight style={{ width: 13, height: 13, color: '#A5B8AE', flexShrink: 0 }} />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                Street Address / Nearest Landmark
-              </label>
-              <input
-                type="text"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                className="input-civora"
-                placeholder="Near Main Market, Opp. Community Dispensary..."
-              />
+          {/* STEP 2 — Describe */}
+          {step === 2 && (
+            <div style={{ ...slide, display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>
+                  Problem Title <span style={{ color: '#C52222' }}>*</span>
+                </label>
+                <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-civora" style={{ fontWeight: 600 }} placeholder="E.g., Severe water leakage flooding 42nd Street near municipal park" maxLength={255} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                  <div style={{ fontSize: 10, color: form.title.trim().length < 5 && form.title.length > 0 ? '#C52222' : '#8C9F92' }}>
+                    {form.title.trim().length < 5 && form.title.length > 0 ? `${5 - form.title.trim().length} more character(s) needed` : 'Minimum 5 characters'}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#8C9F92' }}>{form.title.length}/255</div>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>
+                  Detailed Context &amp; Observations
+                </label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input-civora" style={{ resize: 'none', fontSize: 13, lineHeight: 1.6 }} rows={5} placeholder="Include details: How long has this issue existed? Who is impacted? Any previous complaints filed?" maxLength={5000} />
+                <div style={{ textAlign: 'right', fontSize: 10, color: '#8C9F92', marginTop: 4 }}>{form.description.length}/5000</div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>Perceived Urgency</label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {PRIORITIES.map((p) => (
+                    <button key={p.value} onClick={() => setForm({ ...form, userPriority: p.value })}
+                      style={{ padding: '7px 16px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: `1.5px solid ${form.userPriority === p.value ? p.border : '#E1ECE2'}`, background: form.userPriority === p.value ? p.bg : '#FAFDF9', color: form.userPriority === p.value ? p.color : '#8C9F92', transition: 'all 0.18s ease', transform: form.userPriority === p.value ? 'scale(1.05)' : 'scale(1)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {form.userPriority === p.value && <Check style={{ width: 10, height: 10 }} />}
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-bold text-[#4E6857] uppercase tracking-wider mb-2">
-                Citizen National ID / CNIC (Optional)
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={form.cnic}
-                onChange={(e) => {
-                  // Only allow digits up to 13
-                  const digits = e.target.value.replace(/\D/g, '').slice(0, 13);
-                  let formatted = digits;
-                  if (digits.length > 5 && digits.length <= 12) {
-                    formatted = `${digits.slice(0, 5)}-${digits.slice(5)}`;
-                  } else if (digits.length > 12) {
-                    formatted = `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12, 13)}`;
-                  }
-                  setForm({ ...form, cnic: formatted });
-                }}
-                className={`input-civora font-mono ${cnicDigits.length > 0 && cnicDigits.length < 13 ? '!border-amber-400 focus:!border-amber-500' : ''}`}
-                placeholder="61101-1234567-1"
-                maxLength={15}
-              />
-              {cnicDigits.length > 0 && cnicDigits.length < 13 ? (
-                <p className="text-[11px] text-amber-600 mt-1 font-medium">
-                  CNIC must be a 13-digit number. ({13 - cnicDigits.length} more digit{13 - cnicDigits.length === 1 ? '' : 's'} needed)
-                </p>
-              ) : (
-                <p className="text-[11px] text-[#637C6D] mt-1">
-                  Numbers only (e.g. 61101-1234567-1). Letters are automatically blocked.
-                </p>
+          {/* STEP 3 — Evidence */}
+          {step === 3 && (
+            <div style={slide}>
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                onClick={() => fileInputRef.current?.click()}
+                style={{ border: `2px dashed ${dragOver ? '#2A6443' : '#C8D8C7'}`, borderRadius: 18, padding: '40px 24px', textAlign: 'center', cursor: 'pointer', background: dragOver ? '#EAF5E9' : '#FAFDF9', transition: 'all 0.22s ease', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 100%,rgba(28,72,48,0.04),transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ width: 60, height: 60, borderRadius: 18, background: dragOver ? 'linear-gradient(135deg,#1C4830,#2A6443)' : '#EAF5E9', border: `1.5px solid ${dragOver ? '#1C4830' : '#CDECD6'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', transition: 'all 0.22s', boxShadow: dragOver ? '0 8px 24px rgba(28,72,48,0.2)' : 'none' }}>
+                  <UploadCloud style={{ width: 26, height: 26, color: dragOver ? '#fff' : '#2A6443' }} />
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#17261D', marginBottom: 5 }}>{dragOver ? 'Drop files to upload' : 'Drag & drop files here or click to browse'}</p>
+                <p style={{ fontSize: 11, color: '#6B8572' }}>Images (JPG, PNG, WebP) &amp; PDFs — Max 10MB — Up to 10 files</p>
+                <input ref={fileInputRef} type="file" multiple accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => e.target.files && addFiles(e.target.files)} />
+              </div>
+              {files.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#4B6655', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Paperclip style={{ width: 12, height: 12 }} />{files.length} file{files.length > 1 ? 's' : ''} attached
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {files.map((file, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 13, background: '#F6FAF5', border: '1px solid #DEE7DC' }}>
+                        {previews[i]
+                          ? <img src={previews[i]} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', border: '1px solid #DEE7DC' }} />
+                          : <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', border: '1px solid #DEE7DC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Paperclip style={{ width: 15, height: 15, color: '#6B8572' }} /></div>}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: '#17261D', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
+                          <div style={{ fontSize: 10, color: '#7A9384', marginTop: 2 }}>{(file.size / 1024).toFixed(1)} KB</div>
+                        </div>
+                        <button onClick={() => removeFile(i)} style={{ padding: 6, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#A5B8AE', transition: 'color 0.15s', display: 'flex' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#C52222')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#A5B8AE')}>
+                          <X style={{ width: 14, height: 14 }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 5: Review */}
-        {step === 5 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-[#14261C] mb-1">Review Report Submission</h2>
-            <div className="space-y-2.5 text-xs">
-              {[
-                { label: 'Domain', value: selectedCategory?.name || form.categoryId },
-                { label: 'Problem Type', value: selectedType?.name || form.typeId },
-                { label: 'Title', value: form.title },
-                { label: 'Description', value: form.description || '(No description)' },
-                { label: 'Location', value: `${form.city}${form.area ? ', ' + form.area : ''}${form.address ? ' (' + form.address + ')' : ''}` },
-                { label: 'Attached Files', value: `${files.length} document(s)` },
-              ].map((row) => (
-                <div key={row.label} className="flex items-start gap-4 p-3 rounded-xl bg-[#F6FAF5] border border-[#DEE7DC]">
-                  <div className="font-bold text-[#557161] w-28 flex-shrink-0 uppercase tracking-wider">{row.label}</div>
-                  <div className="font-semibold text-[#14261C] flex-1">{row.value}</div>
+          {/* STEP 4 — Location */}
+          {step === 4 && (
+            <div style={{ ...slide, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>
+                    City <span style={{ color: '#C52222' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <MapPin style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: '#7A9384', pointerEvents: 'none' }} />
+                    <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value.replace(/[0-9]/g, '') })} className="input-civora" style={{ paddingLeft: 34, borderColor: form.city && !isCityValid ? '#F5C6C6' : undefined }} placeholder="Islamabad, Lahore..." />
+                  </div>
+                  {form.city && !isCityValid && <p style={{ fontSize: 10, color: '#C52222', marginTop: 4, fontWeight: 500 }}>Letters only — no numbers allowed</p>}
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-4 p-4 rounded-xl bg-[#EBF5EA] border border-[#CCE2CA] flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="user-declaration"
-                checked={declared}
-                onChange={(e) => setDeclared(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded text-[#1C4830] focus:ring-[#1C4830] cursor-pointer accent-[#1C4830]"
-              />
-              <label htmlFor="user-declaration" className="text-xs text-[#1D4A2E] leading-relaxed cursor-pointer font-medium select-none">
-                I hereby declare that this report is submitted in good faith, accurately describes a real civic problem, and includes genuine evidence.
-              </label>
-            </div>
-
-            {error && (
-              <div className="p-3 rounded-xl bg-[#FDEEEE] border border-[#F8B4B4] text-[#B92E2E] text-xs font-semibold">
-                {error}
+                <div>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>Area / Sector</label>
+                  <input type="text" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} className="input-civora" placeholder="Sector F-8, Gulberg..." />
+                </div>
               </div>
-            )}
-          </div>
-        )}
+              <div>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>Street Address / Nearest Landmark</label>
+                <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input-civora" placeholder="Near Main Market, Opp. Community Dispensary..." />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#4E6857', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CreditCard style={{ width: 12, height: 12 }} />CNIC / National ID
+                    <span style={{ fontSize: 9, fontWeight: 500, color: '#8C9F92', textTransform: 'none', letterSpacing: 0 }}>(Optional)</span>
+                  </div>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Shield style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: '#7A9384', pointerEvents: 'none' }} />
+                  <input type="text" inputMode="numeric" value={form.cnic}
+                    onChange={(e) => {
+                      const d = e.target.value.replace(/\D/g, '').slice(0, 13);
+                      let f = d;
+                      if (d.length > 5 && d.length <= 12) f = `${d.slice(0,5)}-${d.slice(5)}`;
+                      else if (d.length > 12) f = `${d.slice(0,5)}-${d.slice(5,12)}-${d.slice(12,13)}`;
+                      setForm({ ...form, cnic: f });
+                    }}
+                    className="input-civora" style={{ fontFamily: 'monospace', paddingLeft: 34, borderColor: cnicDigits.length > 0 && cnicDigits.length < 13 ? '#FCE5BE' : undefined }} placeholder="61101-1234567-1" maxLength={15} />
+                </div>
+                {cnicDigits.length > 0 && cnicDigits.length < 13
+                  ? <p style={{ fontSize: 10, color: '#A86518', marginTop: 4, fontWeight: 500 }}>{13 - cnicDigits.length} more digit{13 - cnicDigits.length === 1 ? '' : 's'} needed</p>
+                  : <p style={{ fontSize: 10, color: '#8C9F92', marginTop: 4 }}>Format: 61101-1234567-1 (13 digits)</p>}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5 — Review */}
+          {step === 5 && (
+            <div style={{ ...slide, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {([
+                  { label: 'Domain',       value: selectedCategory?.name || form.categoryId, icon: Building2 },
+                  { label: 'Problem Type', value: selectedType?.name || form.typeId,         icon: ChevronRight },
+                  { label: 'Title',        value: form.title,                                icon: FileText },
+                  { label: 'Description',  value: form.description || '(No description provided)', icon: FileText },
+                  { label: 'Location',     value: `${form.city}${form.area ? ', '+form.area : ''}${form.address ? ' · '+form.address : ''}`, icon: MapPin },
+                  { label: 'Priority',     value: PRIORITIES.find((p) => p.value === form.userPriority)?.label || form.userPriority, icon: AlertTriangle },
+                  { label: 'Evidence',     value: `${files.length} file${files.length !== 1 ? 's' : ''} attached`, icon: Paperclip },
+                ] as { label: string; value: string; icon: any }[]).map((row) => {
+                  const Icon = row.icon;
+                  return (
+                    <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 13px', borderRadius: 13, background: '#F6FAF5', border: '1px solid #E2EBE0' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EAF5E9', border: '1px solid #CDECD6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon style={{ width: 12, height: 12, color: '#2A6443' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: '#6B8572', textTransform: 'uppercase' as any, letterSpacing: 1.2, marginBottom: 2 }}>{row.label}</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: '#17261D', wordBreak: 'break-word' }}>{row.value}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Declaration */}
+              <div onClick={() => setDeclared(!declared)}
+                style={{ padding: '13px 15px', borderRadius: 13, background: declared ? 'linear-gradient(135deg,#EAF5E9,#DDF0DB)' : '#F6FAF5', border: `1.5px solid ${declared ? '#CDECD6' : '#E2EBE0'}`, display: 'flex', alignItems: 'flex-start', gap: 11, transition: 'all 0.22s', cursor: 'pointer' }}>
+                <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${declared ? '#1C4830' : '#B5C7BA'}`, background: declared ? '#1C4830' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, transition: 'all 0.18s' }}>
+                  {declared && <Check style={{ width: 11, height: 11, color: '#fff' }} />}
+                </div>
+                <label style={{ fontSize: 12, color: '#1D4A2E', lineHeight: 1.6, cursor: 'pointer', fontWeight: 500 }}>
+                  I hereby declare that this report is submitted in good faith, accurately describes a real civic problem, and includes genuine evidence.
+                </label>
+              </div>
+
+              {error && (
+                <div style={{ padding: '11px 13px', borderRadius: 12, background: '#FDEEEE', border: '1px solid #F8B4B4', color: '#B92E2E', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertTriangle style={{ width: 14, height: 14, flexShrink: 0 }} />{error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => { setStep(Math.max(0, step - 1)); setError(''); }}
-          disabled={step === 0}
-          className="btn-secondary text-xs px-5 py-2.5 rounded-xl disabled:opacity-30"
-        >
-          ← Back
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 }}>
+        <button onClick={() => goStep(Math.max(0, step - 1))} disabled={step === 0} className="btn-secondary"
+          style={{ fontSize: 12, padding: '10px 20px', borderRadius: 12, opacity: step === 0 ? 0.35 : 1 }}>
+          <ArrowLeft className="w-3.5 h-3.5" /> Back
         </button>
 
+        {/* Dot progress */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {STEPS.map((_, i) => (
+            <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i < step ? '#2A6443' : i === step ? '#1C4830' : '#E2EBE0', transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)' }} />
+          ))}
+        </div>
+
         {step < STEPS.length - 1 ? (
-          <button
-            onClick={() => { if (canProceed) { setStep(step + 1); setError(''); } }}
-            disabled={!canProceed}
-            className="btn-primary text-xs px-6 py-2.5 rounded-xl disabled:opacity-40 inline-flex items-center gap-1.5"
-          >
-            Continue
-            <ArrowRight className="w-3.5 h-3.5" />
+          <button onClick={() => { if (canProceed) goStep(step + 1); }} disabled={!canProceed} className="btn-primary"
+            style={{ fontSize: 12, padding: '10px 22px', borderRadius: 12, opacity: canProceed ? 1 : 0.4 }}>
+            Continue <ArrowRight className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={submitting || !declared}
-            className="btn-primary text-xs px-7 py-2.5 rounded-xl disabled:opacity-40 shadow-xs"
-          >
-            {submitting ? 'Submitting...' : 'Submit Report'}
+          <button onClick={handleSubmit} disabled={submitting || !declared} className="btn-primary"
+            style={{ fontSize: 12, padding: '10px 24px', borderRadius: 12, opacity: submitting || !declared ? 0.4 : 1, minWidth: 140, display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            {submitting ? (
+              <>
+                <div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                Submitting...
+              </>
+            ) : (
+              <><Send className="w-3.5 h-3.5" /> Submit Report</>
+            )}
           </button>
         )}
       </div>

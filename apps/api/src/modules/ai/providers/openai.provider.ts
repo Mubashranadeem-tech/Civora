@@ -86,11 +86,17 @@ export class OpenAiProvider implements AiProvider {
   private async chat(systemPrompt: string, userPrompt: string): Promise<string> {
     const { client, model } = this.getClientAndModel();
 
+    // Groq requires the word "json" in the prompt when using json_object response format
+    const isGroq = !!(getEnvFresh('GROQ_API_KEY') || process.env.GROQ_API_KEY);
+    const systemWithJson = isGroq && !systemPrompt.toLowerCase().includes('json')
+      ? `${systemPrompt} Always respond with valid JSON.`
+      : systemPrompt;
+
     try {
       const response = await client.chat.completions.create({
         model,
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: systemWithJson },
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.3,
@@ -98,7 +104,13 @@ export class OpenAiProvider implements AiProvider {
       });
 
       const raw = response.choices[0]?.message?.content || '{}';
-      return this.cleanJson(raw);
+      const cleaned = this.cleanJson(raw);
+      // If empty or just {}, return a safe default
+      if (!cleaned || cleaned === '{}') {
+        this.logger.warn(`Empty response from model ${model}, returning safe default`);
+        return '{}';
+      }
+      return cleaned;
     } catch (err: any) {
       const errMsg = err?.response?.data?.error?.message || err?.message || 'AI request failed';
       this.logger.error(`AI completion failed (${model}): ${errMsg}`);

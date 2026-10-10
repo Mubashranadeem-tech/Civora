@@ -89,41 +89,6 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* AI Status Banner */}
-      {aiStatus && (
-        <div
-          className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs ${
-            aiStatus.isConfigured
-              ? 'bg-gradient-to-r from-[#EBF5EB] to-[#F3FAF2] border-[#CDE5CC] text-[#1B5230]'
-              : 'bg-gradient-to-r from-[#FFF4EB] to-[#FFF9F5] border-[#FBD9BE] text-[#9A420A]'
-          }`}
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-white border border-[#CFE3CE] flex items-center justify-center text-[#1E5433] shadow-xs flex-shrink-0">
-              <Cpu className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-sm font-bold flex items-center gap-2">
-                AI Pipeline Engine: {aiStatus.isConfigured ? 'Operational & Ready' : 'Configuration Needed'}
-                {aiStatus.isConfigured && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#D6EBD7] text-[#164828]">
-                    <Zap className="w-2.5 h-2.5 text-[#2B7347]" />
-                    Ultra-Fast LLM
-                  </span>
-                )}
-              </div>
-              <div className="text-xs opacity-85 mt-0.5">
-                Active Provider: <span className="font-bold uppercase tracking-wider">{aiStatus.provider}</span> · Automated Vision & Precedent Research Enabled
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-extrabold px-3.5 py-1.5 rounded-xl bg-white border border-current shadow-xs tracking-wide">
-              {aiStatus.isConfigured ? 'ONLINE' : 'ACTION REQUIRED'}
-            </span>
-          </div>
-        </div>
-      )}
 
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

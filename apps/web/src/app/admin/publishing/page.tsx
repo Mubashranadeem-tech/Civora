@@ -24,28 +24,28 @@ export default function AdminPublishingPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2EBE0]">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#13251A] tracking-tight">Multi-Channel Publishing Matrix</h1>
-          <p className="text-sm text-[#546E5E]">Manage automated distribution connectors to Facebook, WordPress, Webhooks, and social channels.</p>
+          <h1 className="text-xl sm:text-2xl font-black text-[#13251A] tracking-tight">Multi-Channel Publishing Matrix</h1>
+          <p className="text-xs sm:text-sm text-[#546E5E] mt-0.5">Manage automated distribution connectors to Facebook, WordPress, Webhooks, and social channels.</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D5E4D4] text-xs font-semibold text-[#255C3A] shadow-xs">
-          <ShieldCheck className="w-4 h-4 text-[#2F7A4C]" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D5E4D4] text-xs font-semibold text-[#255C3A] shadow-xs shrink-0 self-start sm:self-auto">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#2F7A4C]" />
           Human-in-the-Loop Gateway
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {PLATFORMS.map((item) => {
           const Icon = item.icon;
           const isConfigured = status?.platforms?.[item.key];
           return (
-            <div key={item.key} className="glass-card p-6 bg-white border border-[#DCE5DA] hover:border-[#ADC7B0] transition-all flex flex-col justify-between group shadow-xs">
+            <div key={item.key} className="glass-card p-5 bg-white border border-[#DCE5DA] hover:border-[#ADC7B0] transition-all flex flex-col justify-between group shadow-xs rounded-2xl">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl bg-[#F0F6EE] border border-[#D8E6D7] flex items-center justify-center text-[#235837] group-hover:bg-[#E5F1E3] transition-colors">
+                <div className="flex items-center justify-between gap-3 mb-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#F0F6EE] border border-[#D8E6D7] flex items-center justify-center text-[#235837] group-hover:bg-[#E5F1E3] transition-colors shrink-0 shadow-2xs">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className={`text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 ${
-                    isConfigured ? 'bg-[#EBF5EA] text-[#1E5433] border border-[#CCE2CA]' : 'bg-[#F9FAF8] text-[#869E8F] border border-[#E3ECE2]'
+                  <span className={`text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 shadow-2xs ${
+                    isConfigured ? 'bg-[#EBF5EA] text-[#1E5433] border border-[#CCE2CA]' : 'bg-[#F9FAF8] text-[#7A9383] border border-[#E3ECE2]'
                   }`}>
                     {isConfigured ? (
                       <>
@@ -54,18 +54,18 @@ export default function AdminPublishingPage() {
                       </>
                     ) : (
                       <>
-                        <AlertCircle className="w-3 h-3 text-[#94A99C]" />
+                        <AlertCircle className="w-3 h-3 text-[#8BA093]" />
                         Pending
                       </>
                     )}
                   </span>
                 </div>
-                <h3 className="text-base font-bold text-[#14261C] mb-1.5 group-hover:text-[#235837] transition-colors">{item.name}</h3>
+                <h3 className="text-sm sm:text-base font-bold text-[#14261C] mb-1.5 group-hover:text-[#235837] transition-colors">{item.name}</h3>
                 <p className="text-xs text-[#5C7566] leading-relaxed mb-4">{item.desc}</p>
               </div>
-              <div className="text-[11px] font-semibold text-[#577564] border-t border-[#EAF0E8] pt-3.5 flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isConfigured ? 'bg-[#328352] animate-pulse' : 'bg-[#C2D4C6]'}`} />
-                {isConfigured ? 'Verified & ready to broadcast' : 'Configure credentials in environment'}
+              <div className="text-[11px] font-medium text-[#577564] border-t border-[#EAF0E8] pt-3 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${isConfigured ? 'bg-[#328352] animate-pulse' : 'bg-[#C2D4C6]'}`} />
+                <span>{isConfigured ? 'Verified & ready to broadcast' : 'Configure credentials in environment'}</span>
               </div>
             </div>
           );

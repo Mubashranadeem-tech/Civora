@@ -28,11 +28,11 @@ export class PublishingService {
     private readonly config: ConfigService,
   ) {
     this.adapters = {
-      linkedin: new LinkedInAdapter(config),
-      twitter: new TwitterAdapter(config),
+      facebook: new FacebookAdapter(config),
       wordpress: new WordPressAdapter(config),
       webhook: new WebhookAdapter(config),
-      facebook: new FacebookAdapter(config),
+      twitter: new TwitterAdapter(config),
+      linkedin: new LinkedInAdapter(config),
     };
   }
 

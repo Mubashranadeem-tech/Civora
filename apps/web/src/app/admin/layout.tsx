@@ -13,7 +13,9 @@ import {
   Settings, 
   LogOut, 
   Menu, 
-  ShieldAlert 
+  ShieldAlert,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const adminNav = [
@@ -30,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -57,29 +60,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#F8FAF8] text-[#14261C] flex">
       {/* Admin Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E0E8DF] flex flex-col transition-transform duration-300 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-[#E0E8DF] flex flex-col transition-all duration-300 ease-in-out relative ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static lg:z-auto shadow-xs`}
+        } lg:translate-x-0 lg:static lg:z-auto shadow-xs ${
+          collapsed ? 'lg:w-20' : 'lg:w-64'
+        }`}
       >
-        <div className="p-6 border-b border-[#EAF0E8]">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1C4830] to-[#2F6D49] text-white flex items-center justify-center text-sm font-bold shadow-xs">
-              A
-            </div>
-            <div>
-              <div className="text-base font-bold text-[#14261C]">
-                Civora
+        {/* Floating Border Collapse Toggle Button */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="hidden lg:flex items-center justify-center absolute -right-3 top-6 z-30 w-6 h-6 rounded-full bg-white border border-[#CDDDCC] text-[#2F593E] hover:text-[#112417] hover:bg-[#EEF6EC] shadow-xs hover:shadow-sm transition-all"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label="Toggle sidebar"
+        >
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+        </button>
+
+        {/* Sidebar Header / Logo */}
+        <div className={`p-4 border-b border-[#EAF0E8] flex flex-col ${collapsed ? 'items-center justify-center' : ''}`}>
+          <div className={`flex items-center ${collapsed ? 'justify-center w-full' : 'gap-2.5 min-w-0'}`}>
+            <Link href="/" className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5 min-w-0'}`}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1C4830] to-[#2F6D49] text-white flex items-center justify-center text-sm font-bold shadow-xs shrink-0">
+                A
               </div>
-              <div className="text-xs font-semibold text-[#255C3A]">Admin Console</div>
-            </div>
-          </Link>
-          <div className="mt-3 px-3 py-1.5 rounded-lg bg-[#EAF4E8] border border-[#CEE4CD] text-xs font-semibold text-[#1F5433] flex items-center gap-2">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#2F7349]" />
-            Authority Command
+              {!collapsed && (
+                <div className="min-w-0">
+                  <span className="text-base font-bold text-[#14261C] truncate block leading-tight">
+                    Civora
+                  </span>
+                  <div className="text-[11px] font-semibold text-[#255C3A] truncate">Admin Console</div>
+                </div>
+              )}
+            </Link>
           </div>
+
+          {!collapsed && (
+            <div className="mt-3 px-2.5 py-1 rounded-lg bg-[#EAF4E8] border border-[#CEE4CD] text-[11px] font-semibold text-[#1F5433] flex items-center gap-2">
+              <ShieldAlert className="w-3.5 h-3.5 text-[#2F7349]" />
+              Authority Command
+            </div>
+          )}
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        {/* Navigation Items */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {adminNav.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -88,39 +112,62 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 ${
+                title={collapsed ? item.label : undefined}
+                className={`flex items-center rounded-xl text-xs font-semibold transition-all duration-150 ${
+                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'
+                } ${
                   isActive
-                    ? 'bg-[#EBF4EA] text-[#1C4C2F] border border-[#CFE3CE] shadow-xs'
-                    : 'text-[#506A5B] hover:text-[#14261C] hover:bg-[#F2F7F1]'
+                    ? 'bg-[#1C4830] text-white shadow-xs font-bold'
+                    : 'text-[#486353] hover:text-[#14261C] hover:bg-[#F0F5EE]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#1C4C2F]' : 'text-[#617D6D]'}`} />
-                {item.label}
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#617D6D]'}`} />
+                {!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-[#EAF0E8]">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F4F8F3] border border-[#DFEAE0]">
-            <div className="w-8 h-8 rounded-full bg-[#1C4830] text-white flex items-center justify-center text-xs font-bold shadow-xs flex-shrink-0">
-              {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+        {/* User Card / Footer */}
+        <div className="p-3 border-t border-[#EAF0E8]">
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-full bg-[#1C4830] text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0"
+                title={`${user.name} (Admin)`}
+              >
+                {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <button
+                onClick={() => { logout(); router.push('/'); }}
+                className="text-[#728C7D] hover:text-[#B92E2E] transition-colors p-1.5 rounded-lg hover:bg-[#F4F8F3]"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-[#14261C] truncate">{user.name}</div>
-              <div className="text-[11px] text-[#4E6F5B]">Administrator</div>
+          ) : (
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#F4F8F3] border border-[#DFEAE0]">
+              <div className="w-8 h-8 rounded-full bg-[#1C4830] text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-[#14261C] truncate">{user.name}</div>
+                <div className="text-[10px] text-[#4E6F5B]">Administrator</div>
+              </div>
+              <button
+                onClick={() => { logout(); router.push('/'); }}
+                className="text-[#728C7D] hover:text-[#B92E2E] transition-colors p-1.5 rounded-lg hover:bg-white"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <button
-              onClick={() => { logout(); router.push('/'); }}
-              className="text-[#728C7D] hover:text-[#B92E2E] transition-colors p-1.5 rounded-lg hover:bg-white"
-              title="Sign out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          )}
         </div>
       </aside>
 
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}

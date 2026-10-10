@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { Plus, Paperclip, MapPin, ArrowRight, Inbox } from 'lucide-react';
+import { Plus, Paperclip, MapPin, ArrowRight, Inbox, Search, Filter, ChevronDown } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'badge-submitted',
@@ -77,24 +77,33 @@ export default function MyProblemsPage() {
       </div>
 
       {/* Filter Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="input-civora flex-1"
-          placeholder="Search by title, keyword, or location..."
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="input-civora sm:w-48 text-xs font-semibold"
-        >
-          <option value="">All Statuses</option>
-          {Object.entries(STATUS_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
-          ))}
-        </select>
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+        <div className="relative flex-1 min-w-0 flex items-center">
+          <Search className="w-4 h-4 text-[#728E7D] absolute left-3.5 pointer-events-none z-10" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="input-civora text-xs sm:text-sm !pl-10 w-full"
+            style={{ paddingLeft: '2.5rem' }}
+            placeholder="Search by title, keyword, or location..."
+          />
+        </div>
+        <div className="relative w-full sm:w-56 shrink-0 flex items-center">
+          <Filter className="w-3.5 h-3.5 text-[#638271] absolute left-3.5 pointer-events-none z-10" />
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            className="input-civora text-xs font-semibold appearance-none cursor-pointer w-full !pl-9 !pr-9"
+            style={{ paddingLeft: '2.3rem', paddingRight: '2.3rem' }}
+          >
+            <option value="">All Statuses</option>
+            {Object.entries(STATUS_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+          <ChevronDown className="w-4 h-4 text-[#728E7D] absolute right-3.5 pointer-events-none z-10" />
+        </div>
       </div>
 
       {loading ? (

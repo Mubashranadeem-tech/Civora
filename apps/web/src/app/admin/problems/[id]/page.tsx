@@ -595,22 +595,31 @@ export default function AdminProblemDetailPage() {
           <div className="glass-card p-6 bg-white border border-[#DCE5DA]">
             <h3 className="font-bold text-base text-[#14261C] mb-4 pb-2 border-b border-[#EAF0E8]">Platform Connectors</h3>
             {publishingStatus ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                {Object.entries(publishingStatus.platforms as Record<string, boolean>).map(([platform, configured]) => (
-                  <div
-                    key={platform}
-                    className={`p-3.5 rounded-xl border text-center ${
-                      configured
-                        ? 'bg-[#EBF5EA] border-[#CCE2CA]'
-                        : 'bg-[#F9FAF8] border-[#E5ECE3]'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-[#14261C] capitalize mb-1">{platform}</div>
-                    <div className={`text-[11px] font-bold ${configured ? 'text-[#1D5432]' : 'text-[#879E90]'}`}>
-                      {configured ? '● Connected' : '○ Not set'}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                {[
+                  { key: 'facebook', label: 'Facebook' },
+                  { key: 'wordpress', label: 'WordPress' },
+                  { key: 'webhook', label: 'Webhook' },
+                  { key: 'twitter', label: 'Twitter / X' },
+                  { key: 'linkedin', label: 'LinkedIn' },
+                ].map(({ key, label }) => {
+                  const configured = !!publishingStatus.platforms?.[key];
+                  return (
+                    <div
+                      key={key}
+                      className={`p-3.5 rounded-xl border text-center transition-all ${
+                        configured
+                          ? 'bg-[#EBF5EA] border-[#CCE2CA] shadow-xs'
+                          : 'bg-[#F9FAF8] border-[#E5ECE3] opacity-75'
+                      }`}
+                    >
+                      <div className="text-xs font-bold text-[#14261C] mb-1">{label}</div>
+                      <div className={`text-[11px] font-bold ${configured ? 'text-[#1D5432]' : 'text-[#879E90]'}`}>
+                        {configured ? '● Connected' : '○ Not set'}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="skeleton h-24 rounded-xl mb-6" />

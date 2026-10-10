@@ -24,7 +24,6 @@ import {
   User,
   Shield,
   ArrowRight,
-  Sparkles,
   Layers,
   Cpu,
   Share2,
@@ -39,7 +38,9 @@ import {
   ShieldCheck,
   Eye,
   Terminal,
-  ExternalLink
+  ExternalLink,
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -71,21 +72,21 @@ const PIPELINE_STEPS = [
   {
     step: '02',
     title: 'AI Multi-Agent Triage',
-    badge: 'Step 2 · Verification',
+    badge: 'Step 2 · Triage',
     desc: 'Autonomous LLM assesses authenticity, scores severity (1-100), and eliminates duplicate spam.',
     icon: BrainCircuit,
   },
   {
     step: '03',
     title: 'Deep Civic Research',
-    badge: 'Step 3 · Authority Mapping',
+    badge: 'Step 3 · Research',
     desc: 'Engine cross-references local statutes, past precedents, and pinpoints the exact accountable government desk.',
     icon: Search,
   },
   {
     step: '04',
     title: 'Multi-Channel Accountability',
-    badge: 'Step 4 · Public Action',
+    badge: 'Step 4 · Dispatch',
     desc: 'Verified dossiers are dispatched with 1-click to WordPress civic portals, Twitter/X, and municipal APIs.',
     icon: Send,
   },
@@ -111,8 +112,8 @@ const FAQ_ITEMS = [
     a: 'Once an administrator validates the AI Civic Dossier, Civora automatically posts formatted articles to public WordPress portals, broadcasts geotagged alerts to Twitter/X tagging the responsible ministry, and dispatches JSON payloads to municipal webhooks.',
   },
   {
-    q: 'What LLM engines power Civora?',
-    a: 'Civora is powered by ultra-fast inference through Groq (Llama-3 70B/8B) and OpenAI vision models, delivering thorough civic intelligence synthesis in under 3.5 seconds.',
+    q: 'How does the automated civic intelligence pipeline work?',
+    a: 'Civora utilizes a multi-modal assessment architecture to inspect citizen photos, verify geo-locations, and benchmark incident severity against municipal regulations in under 3.5 seconds.',
   },
 ];
 
@@ -235,7 +236,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero Section ─────────────────────────────────────────────────────── */}
-      <section className="hero-gradient pt-32 sm:pt-36 pb-20 relative overflow-hidden border-b border-[#E3EBE0] bg-dot-grid-subtle">
+      <section className="hero-gradient pt-24 sm:pt-28 pb-12 relative overflow-hidden border-b border-[#E3EBE0] bg-dot-grid-subtle">
         {/* Ambient Glow Orbs */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[850px] h-[450px] bg-gradient-to-b from-[#DFEFE0]/80 via-[#EAF4EB]/50 to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-1/4 right-5 w-80 h-80 bg-[#E0EFE0]/60 rounded-full blur-3xl pointer-events-none" />
@@ -244,26 +245,26 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           
           {/* Hackathon Grade Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#D0E2D0] shadow-xs text-xs font-semibold text-[#1F5734] mb-8 animate-fade-in hover:border-[#ADCBAF] transition-colors">
-            <Sparkles className="w-3.5 h-3.5 text-[#2A6D44]" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#D0E2D0] shadow-xs text-xs font-semibold text-[#1F5734] mb-6 animate-fade-in hover:border-[#ADCBAF] transition-colors">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#2A6D44]" />
             <span>Autonomous Civic Action Engine</span>
             <span className="text-[#A4BCA9] font-light">•</span>
             <span className="font-mono text-[#547360] font-medium">Real-Time Civic Intelligence</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#112418] mb-6 leading-[1.08] max-w-5xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#112418] mb-5 leading-[1.12] max-w-4xl mx-auto">
             Transform Citizen Grievances Into{' '}
             <span className="gradient-text block sm:inline">Autonomous Action.</span>
           </h1>
 
           {/* Subheading */}
-          <p className="text-base sm:text-lg md:text-xl text-[#4A6455] max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base md:text-[17px] text-[#4A6455] max-w-2xl mx-auto mb-7 leading-relaxed font-normal">
             Civora bridges grassroots community reports and municipal accountability in real time — powered by automated vision triage, deep civic precedent research, and 1-click multi-channel public broadcasting.
           </p>
 
           {/* ── Quick Tracker Bar & Quick Lookup Chips ────────────────────── */}
-          <div className="max-w-2xl mx-auto mb-14">
+          <div className="max-w-2xl mx-auto mb-10">
             <form onSubmit={(e) => handleTrack(e)} className="flex items-center gap-2 p-2 bg-white rounded-2xl border border-[#CFDFCE] shadow-lg shadow-[#1C4830]/5 focus-within:border-[#2C6944] focus-within:ring-4 focus-within:ring-[#2C6944]/10 transition-all">
               <Search className="w-5 h-5 text-[#5F7D6B] ml-3.5 flex-shrink-0" />
               <input
@@ -451,22 +452,22 @@ export default function LandingPage() {
       </section>
 
       {/* ── Interactive Live AI Pipeline Cockpit / Playground ────────────────── */}
-      <section id="interactive-cockpit" className="py-24 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-3 shadow-2xs">
+      <section id="interactive-cockpit" className="py-12 sm:py-14 max-w-7xl mx-auto px-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-2.5 shadow-2xs">
             <Cpu className="w-3.5 h-3.5" />
             Interactive AI Engine Demo
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#122418] mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#122418] mb-2.5 tracking-tight">
             See the Autonomous Engine <span className="gradient-text">In Action</span>
           </h2>
-          <p className="text-[#516C5C] max-w-2xl mx-auto text-sm sm:text-base">
+          <p className="text-[#516C5C] max-w-xl mx-auto text-xs sm:text-sm">
             Click through the 4 live stages of Civora's autonomous pipeline to see how raw complaints are converted into published civic intelligence in seconds.
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto mb-8 p-1.5 bg-white rounded-2xl border border-[#D5E3D4] shadow-xs">
+        {/* Tab Switcher - Symmetrical Grid so no button wraps awkwardly */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 max-w-4xl mx-auto mb-6 p-2 bg-white rounded-2xl border border-[#D5E3D4] shadow-xs">
           {[
             { id: 'triage', label: '1. AI Vision & Triage', icon: BrainCircuit },
             { id: 'research', label: '2. Precedent Research', icon: Search },
@@ -479,14 +480,14 @@ export default function LandingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveDemoTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center ${
                   isActive
-                    ? 'bg-[#1C4830] text-white shadow-sm'
+                    ? 'bg-[#1C4830] text-white shadow-sm ring-1 ring-[#1C4830]'
                     : 'text-[#4F6859] hover:text-[#14261C] hover:bg-[#F2F7F1]'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{tab.label}</span>
               </button>
             );
           })}
@@ -531,21 +532,76 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Simulated Code/Card Output */}
-              <div className="p-6 rounded-2xl bg-[#F6FAF5] border border-[#D5E4D4] font-mono text-xs space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E0EBE0] text-[11px] text-[#557262]">
-                  <span className="font-bold text-[#14261C]">CIV-2026-000004_TRIAGE.JSON</span>
-                  <span className="text-[#205833] font-bold">STATUS: VERIFIED</span>
+              {/* Executive Incident Inspection Dossier Card (No Code / Real Human UI) */}
+              <div className="p-6 sm:p-7 rounded-2xl bg-[#F8FAF7] border border-[#D5E4D4] shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#E5EDE4]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#1C4830] animate-pulse" />
+                    <span className="font-mono text-xs font-bold text-[#14261C] tracking-tight">CASE #CIV-2026-000004</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#1D5833] bg-[#EAF5EC] px-2.5 py-1 rounded-full border border-[#CCE5D0] flex items-center gap-1.5 shadow-2xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#1D5833]" />
+                    Authenticity Verified
+                  </span>
                 </div>
-                <div className="text-[#264D35] space-y-1 text-[11px]">
-                  <div><span className="text-[#728F7E]">"geo_coordinates":</span> "33.7294° N, 73.0931° E"</div>
-                  <div><span className="text-[#728F7E]">"duplicate_check":</span> "0 matching open reports"</div>
-                  <div><span className="text-[#728F7E]">"category_detected":</span> "Higher Education Fee Violation"</div>
-                  <div><span className="text-[#728F7E]">"ai_inference_time":</span> "1,420 ms"</div>
-                  <div><span className="text-[#728F7E]">"urgency_rating":</span> "ESCALATE_TO_ADMIN"</div>
+
+                {/* Structured Inspection Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className="p-3 rounded-xl bg-white border border-[#E0EBE0] shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#567262] mb-1">
+                      <MapPin className="w-3.5 h-3.5 text-[#215735]" />
+                      Location Audited
+                    </div>
+                    <div className="font-semibold text-[#14261C] text-xs">Sector H-9, Islamabad</div>
+                    <div className="text-[10px] text-[#718B7B] font-mono">33.7294° N, 73.0931° E</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white border border-[#E0EBE0] shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#567262] mb-1">
+                      <Layers className="w-3.5 h-3.5 text-[#215735]" />
+                      Department Routing
+                    </div>
+                    <div className="font-semibold text-[#14261C] text-xs">Higher Education Commission</div>
+                    <div className="text-[10px] text-[#718B7B]">Fee Regulation Directorate</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white border border-[#E0EBE0] shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#567262] mb-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#215735]" />
+                      Duplicate Check
+                    </div>
+                    <div className="font-semibold text-[#1D5833] text-xs">Zero Duplicates Found</div>
+                    <div className="text-[10px] text-[#718B7B]">500m Geo-radius scanned</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white border border-[#E0EBE0] shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#567262] mb-1">
+                      <Clock className="w-3.5 h-3.5 text-[#215735]" />
+                      Triage Latency
+                    </div>
+                    <div className="font-semibold text-[#14261C] text-xs">1.42s Autonomous Speed</div>
+                    <div className="text-[10px] text-[#718B7B]">Multi-modal vision pipeline</div>
+                  </div>
                 </div>
-                <div className="p-3 rounded-xl bg-white border border-[#D8E6D7] text-[11px] text-[#1E4D30] font-sans">
-                  <strong>AI Summary:</strong> High institutional fee surcharge lodged without public fee breakdown. High community impact affecting 800+ enrolled students.
+
+                {/* Plain Text Editorial AI Synthesis */}
+                <div className="p-3.5 rounded-xl bg-white border border-[#DCE8DB] text-xs space-y-1.5 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#1D5632]">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Executive AI Assessment Summary</span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-[#2A4B38] leading-relaxed">
+                    Mandatory departmental internship surcharge levied without gazetted fee schedule approval. Impact assessment confirms severe financial friction on over 800 registered students.
+                  </p>
+                </div>
+
+                {/* Handover Notice */}
+                <div className="flex items-center justify-between pt-1 text-[11px] text-[#557161]">
+                  <span className="flex items-center gap-1.5 font-semibold text-[#C25008]">
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#C25008]" />
+                    Priority: Escalate to Admin Review
+                  </span>
+                  <span className="font-medium text-[#718A7B]">Auto-logged in Registry</span>
                 </div>
               </div>
             </div>
@@ -716,38 +772,38 @@ export default function LandingPage() {
       </section>
 
       {/* ── How It Works (4-Stage Pipeline) ─────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 bg-[#F2F7F1] border-y border-[#E2EAE0]">
+      <section id="how-it-works" className="py-12 sm:py-14 bg-[#F2F7F1] border-y border-[#E2EAE0]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#D0E3CE] text-[#1E5433] text-xs font-bold uppercase tracking-wider mb-3 shadow-2xs">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#D0E3CE] text-[#1E5433] text-xs font-bold uppercase tracking-wider mb-2.5 shadow-2xs">
               System Architecture
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#132419] mb-4 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#132419] mb-2.5 tracking-tight">
               The 4-Stage <span className="gradient-text">Accountability Pipeline</span>
             </h2>
-            <p className="text-[#516C5C] max-w-2xl mx-auto text-sm sm:text-base">
+            <p className="text-[#516C5C] max-w-xl mx-auto text-xs sm:text-sm">
               Engineered to eliminate government red tape and transform community observations into verified municipal action.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {PIPELINE_STEPS.map((step, i) => {
               const Icon = step.icon;
               return (
                 <div
                   key={i}
-                  className="glass-card p-7 text-left relative group hover:border-[#9FC5A3] transition-all bg-white flex flex-col justify-between"
+                  className="glass-card p-6 sm:p-7 text-left relative group hover:border-[#9FC5A3] transition-all bg-white flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#EAF4E8] border border-[#CEE3CC] flex items-center justify-center text-[#215735] group-hover:scale-105 transition-transform">
-                        <Icon className="w-6 h-6" />
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                      <div className="w-11 h-11 shrink-0 rounded-xl bg-[#EAF4E8] border border-[#CEE3CC] flex items-center justify-center text-[#215735] group-hover:scale-105 transition-transform shadow-2xs">
+                        <Icon className="w-5 h-5" />
                       </div>
-                      <span className="font-mono text-xs font-bold text-[#205834] bg-[#E8F4E6] px-2.5 py-1 rounded-full border border-[#D0E6CD]">
+                      <span className="text-[11px] font-bold text-[#1E5632] bg-[#E8F4E6] px-2.5 py-1 rounded-full border border-[#D0E6CD] whitespace-nowrap shadow-2xs">
                         {step.badge}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-[#14261C] mb-2">{step.title}</h3>
+                    <h3 className="text-base font-bold text-[#14261C] mb-2 tracking-tight">{step.title}</h3>
                     <p className="text-xs text-[#526B5C] leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
@@ -758,15 +814,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── Problem Categories Matrix ────────────────────────────────────────── */}
-      <section id="domains" className="py-24 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-3 shadow-2xs">
+      <section id="domains" className="py-12 sm:py-14 max-w-7xl mx-auto px-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-2.5 shadow-2xs">
             Coverage Matrix
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#132419] mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#132419] mb-2.5 tracking-tight">
             Comprehensive <span className="gradient-text">Civic Domains</span>
           </h2>
-          <p className="text-[#516C5C] max-w-2xl mx-auto text-sm sm:text-base">
+          <p className="text-[#516C5C] max-w-xl mx-auto text-xs sm:text-sm">
             Civora supports all municipal, educational, utility, and safety sectors with customized AI evaluation parameters.
           </p>
         </div>
@@ -800,16 +856,16 @@ export default function LandingPage() {
       </section>
 
       {/* ── Comparison Section: Legacy Bureaucracy vs. Civora ───────────────── */}
-      <section id="comparison" className="py-24 bg-[#F2F7F1] border-y border-[#E2EAE0]">
+      <section id="comparison" className="py-12 sm:py-14 bg-[#F2F7F1] border-y border-[#E2EAE0]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#D0E3CE] text-[#1E5433] text-xs font-bold uppercase tracking-wider mb-3 shadow-2xs">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#D0E3CE] text-[#1E5433] text-xs font-bold uppercase tracking-wider mb-2.5 shadow-2xs">
               Why Civora
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#132419] mb-4 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#132419] mb-2.5 tracking-tight">
               Legacy Bureaucracy vs. <span className="gradient-text">Civora AI</span>
             </h2>
-            <p className="text-[#516C5C] max-w-2xl mx-auto text-sm sm:text-base">
+            <p className="text-[#516C5C] max-w-xl mx-auto text-xs sm:text-sm">
               See why traditional municipal ticketing portals fail and how Civora redefines community accountability.
             </p>
           </div>
@@ -855,7 +911,7 @@ export default function LandingPage() {
 
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#D8E6D7]">
                 <div className="w-10 h-10 rounded-xl bg-[#EAF4E8] text-[#215735] flex items-center justify-center font-bold">
-                  <Sparkles className="w-5 h-5" />
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-[#14261C]">Civora Autonomous Platform</h3>
@@ -887,15 +943,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ Section ──────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-24 max-w-4xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-3 shadow-2xs">
+      <section id="faq" className="py-12 sm:py-14 max-w-4xl mx-auto px-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF5EA] border border-[#CCE4CA] text-[#1E5632] text-xs font-bold uppercase tracking-wider mb-2.5 shadow-2xs">
             Frequently Asked Questions
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#132419] mb-3 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-[#132419] mb-2.5 tracking-tight">
             Got Questions? We Have Answers.
           </h2>
-          <p className="text-[#516C5C] text-sm">
+          <p className="text-[#516C5C] text-xs sm:text-sm">
             Everything you need to know about the Civora platform architecture and accountability workflow.
           </p>
         </div>
@@ -931,15 +987,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── Final High-Impact Call to Action ─────────────────────────────────── */}
-      <section className="py-20 max-w-5xl mx-auto px-6 text-center">
-        <div className="glass-card-elevated p-10 sm:p-16 relative overflow-hidden bg-gradient-to-br from-[#F4FAF2] via-[#E8F4E6] to-[#DCEFD9] border border-[#BBD7B9] shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1A482E] to-[#2E6B47] text-white flex items-center justify-center mx-auto mb-6 shadow-md">
-            <Sparkles className="w-7 h-7" />
+      <section className="py-12 sm:py-14 max-w-5xl mx-auto px-6 text-center">
+        <div className="glass-card-elevated p-8 sm:p-12 relative overflow-hidden bg-gradient-to-br from-[#F4FAF2] via-[#E8F4E6] to-[#DCEFD9] border border-[#BBD7B9] shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1A482E] to-[#2E6B47] text-white flex items-center justify-center mx-auto mb-5 shadow-md">
+            <Landmark className="w-6 h-6" />
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-[#122518] mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-black text-[#122518] mb-3 tracking-tight">
             Ready to Build an Accountable City?
           </h2>
-          <p className="text-xs sm:text-base text-[#466252] max-w-xl mx-auto mb-8 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#466252] max-w-lg mx-auto mb-7 leading-relaxed">
             Report local grievances in seconds or supervise city-wide municipal resolution queues with high-speed autonomous intelligence.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
